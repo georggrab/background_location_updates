@@ -3,6 +3,7 @@
   <component name="ProjectModuleManager">
     <modules>
       <module fileurl="file://$PROJECT_DIR$/android.iml" filepath="$PROJECT_DIR$/android.iml" />
+      <module fileurl="file://$USER_HOME$/flutter/.pub-cache/hosted/pub.dartlang.org/android_job_scheduler-0.0.7/android/android_job_scheduler.iml" filepath="$USER_HOME$/flutter/.pub-cache/hosted/pub.dartlang.org/android_job_scheduler-0.0.7/android/android_job_scheduler.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
       <module fileurl="file://$PROJECT_DIR$/../../android/background_location_updates.iml" filepath="$PROJECT_DIR$/../../android/background_location_updates.iml" />
     </modules>

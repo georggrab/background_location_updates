@@ -3,8 +3,13 @@ import 'dart:async';
 
 import 'package:flutter/services.dart';
 import 'package:background_location_updates/background_location_updates.dart';
+import 'package:android_job_scheduler/android_job_scheduler.dart';
 
 void main() => runApp(new MyApp());
+
+void test() {
+  print('test');
+}
 
 class MyApp extends StatefulWidget {
   @override
@@ -28,6 +33,7 @@ class _MyAppState extends State<MyApp> {
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       platformVersion = await BackgroundLocationUpdates.platformVersion;
+      await AndroidJobScheduler.scheduleOnce(const Duration(seconds: 10), 42, test);
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }

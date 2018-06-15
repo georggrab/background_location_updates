@@ -1,7 +1,6 @@
 package io.gjg.backgroundlocationupdates;
 
 import android.app.Activity;
-import android.arch.lifecycle.LifecycleObserver;
 import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.support.annotation.Nullable;
@@ -9,7 +8,6 @@ import android.support.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-import androidx.work.State;
 import androidx.work.WorkStatus;
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.MethodCall;

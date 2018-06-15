@@ -3,13 +3,10 @@ package io.gjg.backgroundlocationupdates;
 import android.Manifest;
 import android.app.Activity;
 import android.arch.lifecycle.LiveData;
-import android.arch.lifecycle.Observer;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.os.AsyncTask;
 import android.support.annotation.NonNull;
-import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.content.ContextCompat;
 import android.util.Log;
@@ -17,6 +14,7 @@ import android.util.Log;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.tasks.Tasks;
 
+import java.util.Calendar;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -26,6 +24,8 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkStatus;
 import androidx.work.Worker;
+import io.gjg.backgroundlocationupdates.persistence.LocationDatabase;
+import io.gjg.backgroundlocationupdates.persistence.LocationEntity;
 
 
 public class LocationManagerController extends Worker {
@@ -33,6 +33,7 @@ public class LocationManagerController extends Worker {
     private static final String TRACK_IDENT = LocationManagerController.class.getSimpleName();
     private static final String TAG = LocationManagerController.class.getSimpleName();
     private FusedLocationProviderClient mClient;
+    private LocationDatabase mLocationDatabase;
 
     public static boolean scheduleLocationTracking(int requestInterval) {
         OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(LocationManagerController.class)
@@ -43,7 +44,7 @@ public class LocationManagerController extends Worker {
                                 .build())
                 .addTag(TRACK_IDENT)
                 .build();
-        WorkManager.getInstance().beginUniqueWork(TRACK_IDENT, ExistingWorkPolicy.KEEP, request).enqueue();
+        WorkManager.getInstance().beginUniqueWork(TRACK_IDENT, ExistingWorkPolicy.REPLACE, request).enqueue();
         return true;
     }
 
@@ -70,14 +71,21 @@ public class LocationManagerController extends Worker {
             if (mClient == null) {
                 mClient = new FusedLocationProviderClient(getApplicationContext());
             }
+            if (mLocationDatabase == null) {
+                mLocationDatabase = LocationDatabase.getLocationDatabase(getApplicationContext());
+            }
             Location result = Tasks.await(mClient.getLastLocation());
-            Log.i(TAG, String.format("Location. acc: %f, lat: %f, lng: %f, alt: %f, speed: %f",
+            this.mLocationDatabase.locationDao().insertAll(new LocationEntity(
                     result.getAccuracy(),
-                    result.getLatitude(),
                     result.getLongitude(),
+                    result.getLatitude(),
                     result.getAltitude(),
-                    result.getSpeed()
+                    Calendar.getInstance().getTimeInMillis(),
+                    0
             ));
+            Log.i(TAG, String.format("Location Traces: %d, Unread Location Traces: %d",
+                    this.mLocationDatabase.locationDao().countLocationTraces(),
+                    this.mLocationDatabase.locationDao().countLocationTracesUnread()));
             LocationManagerController.scheduleLocationTracking(
                     input.getInt("requestInterval", 10000));
             return WorkerResult.SUCCESS;
