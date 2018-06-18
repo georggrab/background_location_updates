@@ -18,6 +18,8 @@ class MyApp extends StatefulWidget {
 
 class _MyAppState extends State<MyApp> {
   String _platformVersion = 'Unknown';
+  List<Map<String, double>> traces = [];
+  int tracesCount;
   Color startTrackingButtonColor = Colors.grey;
   Color isActiveColor = Colors.grey;
 
@@ -33,7 +35,8 @@ class _MyAppState extends State<MyApp> {
     // Platform messages may fail, so we use a try/catch PlatformException.
     try {
       platformVersion = await BackgroundLocationUpdates.platformVersion;
-      await AndroidJobScheduler.scheduleOnce(const Duration(seconds: 10), 42, test);
+      await AndroidJobScheduler.scheduleOnce(
+          const Duration(seconds: 10), 42, test);
     } on PlatformException {
       platformVersion = 'Failed to get platform version.';
     }
@@ -58,63 +61,116 @@ class _MyAppState extends State<MyApp> {
     });
   }
 
+  void updateUnread() async {
+                      int traces = await BackgroundLocationUpdates
+                          .getUnreadLocationTracesCount();
+                      var unread = await BackgroundLocationUpdates
+                          .getUnreadLocationTraces();
+                      setState(() {
+                        tracesCount = traces;
+                        this.traces = unread;
+                      });
+  }
+
   @override
   Widget build(BuildContext context) {
     return new MaterialApp(
       home: new Scaffold(
         appBar: new AppBar(
-          title: const Text('Plugin example app'),
+          title: const Text('background_location_updates'),
         ),
-        body: new Center(
-            child: new Column(
-          children: <Widget>[
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: new RaisedButton(
-                color: this.startTrackingButtonColor,
-                onPressed: () async {
-                  bool loc =
-                      await BackgroundLocationUpdates.startTrackingLocation(
-                          BackgroundLocationUpdates.LOCATION_SINK_SQLITE,
-                          requestInterval: const Duration(seconds: 10));
-                  setState(() {
-                    if (loc) {
-                      this.startTrackingButtonColor = Colors.green;
+        body: Container(
+          child: new Column(
+            children: <Widget>[
+              Wrap(
+                children: <Widget>[
+                  new RaisedButton(
+                    color: this.startTrackingButtonColor,
+                    onPressed: () async {
+                      bool loc = await BackgroundLocationUpdates
+                          .startTrackingLocation(
+                              BackgroundLocationUpdates.LOCATION_SINK_SQLITE,
+                              requestInterval: const Duration(seconds: 10));
+                      setState(() {
+                        if (loc) {
+                          this.startTrackingButtonColor = Colors.green;
+                        } else {
+                          this.startTrackingButtonColor = Colors.red;
+                        }
+                      });
+                    },
+                    child: const Text('startTrackingLocation(10s)'),
+                  ),
+                  new RaisedButton(
+                    onPressed: () {
+                      BackgroundLocationUpdates.stopTrackingLocation();
+                    },
+                    child: const Text('stopTrackingLocation()'),
+                  ),
+                  new RaisedButton(
+                    child: const Text('Is active?'),
+                    color: isActiveColor,
+                    onPressed: null,
+                  ),
+                  new RaisedButton(
+                    child: const Text('Request Permission'),
+                    onPressed: () async {
+                      await BackgroundLocationUpdates.requestPermission();
+                    },
+                  ),
+                  new RaisedButton(
+                    child: new Text("Unread Location Traces: $tracesCount"),
+                    onPressed: () async {
+                      this.updateUnread();
+                    },
+                  ),
+                  new RaisedButton(
+                    child: new Text("Mark all displayed unread as read"),
+                    onPressed: () async {
+                      List<int> ids = this.traces.map((Map<String, double> trace) {
+                        return trace["id"].toInt();
+                      }).toList();
+                      await BackgroundLocationUpdates.markAsRead(ids);
+                      this.updateUnread();
+                    },
+                  )
+                ],
+              ),
+              Flexible(
+                child: ListView.builder(
+                  itemCount: traces.length,
+                  itemBuilder: (BuildContext context, int index) {
+                    if (index < traces.length) {
+                      return new ExpansionTile(
+                        title: new Text('Trace #$index'),
+                        children: <Widget>[
+                          new ListTile(
+                            title: new Text('Latitude'),
+                            subtitle: new Text('${traces[index]["latitude"]}'),
+                          ),
+                          new ListTile(
+                            title: new Text('Longitude'),
+                            subtitle: new Text('${traces[index]["longitude"]}'),
+                          ),
+                          new ListTile(
+                            title: new Text('Altitude'),
+                            subtitle: new Text('${traces[index]["altitude"]}'),
+                          ),
+                          new ListTile(
+                            title: new Text('All'),
+                            subtitle: new Text('${traces[index].toString()}'),
+                          ),
+                        ],
+                      );
                     } else {
-                      this.startTrackingButtonColor = Colors.red;
+                      return null;
                     }
-                  });
-                },
-                child: const Text('startTrackingLocation(10s)'),
+                  },
+                ),
               ),
-            ),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: new RaisedButton(
-                onPressed: () {
-                  BackgroundLocationUpdates.stopTrackingLocation();
-                },
-                child: const Text('stopTrackingLocation()'),
-              ),
-            ),
-            Padding(
-                padding: const EdgeInsets.all(8.0),
-                child: new RaisedButton(
-                  child: const Text('Is active?'),
-                  color: isActiveColor,
-                  onPressed: () async {},
-                )),
-            Padding(
-              padding: const EdgeInsets.all(8.0),
-              child: new RaisedButton(
-                child: const Text('Request Permission'),
-                onPressed: () async {
-                  await BackgroundLocationUpdates.requestPermission();
-                },
-              ),
-            )
-          ],
-        )),
+            ],
+          ),
+        ),
       ),
     );
   }

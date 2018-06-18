@@ -32,7 +32,27 @@ class BackgroundLocationUpdates {
     return _channel.invokeMethod('requestPermission');
   }
 
-  static Future<List<dynamic>> getLatestBackgroundLocationUpdates() async {
-    return _channel.invokeMethod('getLatestBackgroundLocationUpdates');
+  static Future<List<Map<String, double>>> getLocationTraces() async {
+    List<dynamic> traces = await _channel.invokeMethod('getLocationTraces');
+    return traces.cast<Map<dynamic, dynamic>>().map((trace) => trace.cast<String, double>()).toList();
+  }
+
+  static Future<List<Map<String, double>>> getUnreadLocationTraces() async {
+    List<dynamic> traces = await _channel.invokeMethod('getUnreadLocationTraces');
+    return traces.cast<Map>().map((trace) => trace.cast<String, double>()).toList();
+  }
+
+  static Future<int> getUnreadLocationTracesCount() async {
+    final int count = await _channel.invokeMethod('getUnreadLocationTracesCount');
+    return count;
+  }
+
+  static Future<int> getLocationTracesCount() async {
+    final int count = await _channel.invokeMethod('getUnreadLocationCount');
+    return count;
+  }
+
+  static Future<void> markAsRead(List<int> ids) async {
+    await _channel.invokeMethod('markAsRead', [ids]);
   }
 }

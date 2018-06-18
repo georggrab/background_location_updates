@@ -4,13 +4,16 @@ import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
 
+import java.util.HashMap;
+import java.util.Map;
+
 @Entity(tableName = "location")
 public class LocationEntity {
     @PrimaryKey(autoGenerate = true)
     private int id;
 
     @ColumnInfo
-    private float accuracy;
+    private double accuracy;
 
     @ColumnInfo
     private double longitude;
@@ -27,13 +30,25 @@ public class LocationEntity {
     @ColumnInfo(name = "read_count")
     private int readCount;
 
-    public LocationEntity(float accuracy, double longitude, double latitude, double altitude, long time, int readCount) {
+    public LocationEntity(double accuracy, double longitude, double latitude, double altitude, long time, int readCount) {
         this.accuracy = accuracy;
         this.longitude = longitude;
         this.latitude = latitude;
         this.altitude = altitude;
         this.time = time;
         this.readCount = readCount;
+    }
+
+    public Map<String, Double> toMap() {
+        final HashMap<String, Double> map = new HashMap<>();
+        map.put("id", Integer.valueOf(this.id).doubleValue());
+        map.put("accuracy", this.accuracy);
+        map.put("longitude", this.longitude);
+        map.put("latitude", this.latitude);
+        map.put("altitude", this.altitude);
+        map.put("time", Long.valueOf(time).doubleValue());
+        map.put("readCount", Integer.valueOf(this.readCount).doubleValue());
+        return map;
     }
 
     public int getId() {
@@ -44,11 +59,11 @@ public class LocationEntity {
         this.id = id;
     }
 
-    public float getAccuracy() {
+    public double getAccuracy() {
         return accuracy;
     }
 
-    public void setAccuracy(float accuracy) {
+    public void setAccuracy(double accuracy) {
         this.accuracy = accuracy;
     }
 

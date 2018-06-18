@@ -3,7 +3,9 @@ package io.gjg.backgroundlocationupdates.service;
 import android.app.Service;
 import android.app.job.JobParameters;
 import android.app.job.JobService;
+import android.content.Context;
 
+import io.gjg.backgroundlocationupdates.BackgroundLocationUpdatesPlugin;
 import io.gjg.backgroundlocationupdates.LocationManagerController;
 
 public class BootStrapLocationTrackingService extends JobService {
@@ -14,7 +16,9 @@ public class BootStrapLocationTrackingService extends JobService {
 
     @Override
     public boolean onStartJob(JobParameters jobParameters) {
-        LocationManagerController.scheduleLocationTracking(10000);
+        Integer requestInterval = getApplicationContext().getSharedPreferences(BackgroundLocationUpdatesPlugin.SHARED_PREFS, Context.MODE_PRIVATE)
+                .getInt(BackgroundLocationUpdatesPlugin.KEY_PERSISTED_REQUEST_INTERVAL, 60000);
+        LocationManagerController.scheduleLocationTracking(requestInterval);
         return false;
     }
 }
