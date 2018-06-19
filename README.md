@@ -40,7 +40,7 @@ In your `src/main/app/AndroidManifest.xml`, we'll need to register a couple perm
 ### iOS Permissions
 We'll first have to tell iOS that the app wishes to be started on location updates. Then, we have to justify to the User why we're intending to use their location. Both of these things are taken care of by setting the appropriate keys in `ios/Runner/Info.plist`:
 
-```
+```xml
 <!-- We want to receive location updates in background -->
 <key>UIBackgroundModes</key>
 <array>
