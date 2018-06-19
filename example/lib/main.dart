@@ -11,7 +11,7 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  List<Map<String, double>> traces = [];
+  List<LocationTrace> traces = [];
   int tracesCount;
   String _permissionState;
   Color startTrackingButtonColor = Colors.grey;
@@ -114,8 +114,8 @@ class _MyAppState extends State<MyApp> {
                     child: new Text("Mark all displayed unread as read"),
                     onPressed: () async {
                       List<int> ids =
-                          this.traces.map((Map<String, double> trace) {
-                        return trace["id"].toInt();
+                          this.traces.map((LocationTrace trace) {
+                        return trace.id;
                       }).toList();
                       await BackgroundLocationUpdates.markAsRead(ids);
                       this.updateUnread();
@@ -135,15 +135,15 @@ class _MyAppState extends State<MyApp> {
                         children: <Widget>[
                           new ListTile(
                             title: new Text('Latitude'),
-                            subtitle: new Text('${traces[index]["latitude"]}'),
+                            subtitle: new Text('${traces[index].latitude}'),
                           ),
                           new ListTile(
                             title: new Text('Longitude'),
-                            subtitle: new Text('${traces[index]["longitude"]}'),
+                            subtitle: new Text('${traces[index].longitude}'),
                           ),
                           new ListTile(
                             title: new Text('Altitude'),
-                            subtitle: new Text('${traces[index]["altitude"]}'),
+                            subtitle: new Text('${traces[index].altitude}'),
                           ),
                           new ListTile(
                             title: new Text('All'),

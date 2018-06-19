@@ -32,6 +32,36 @@ PermissionState toPermissionState(int nativeCode) {
   }
 }
 
+class LocationTrace {
+  int id;
+  double latitude;
+  double longitude;
+  double altitude;
+  int readCount;
+  double accuracy;
+
+  LocationTrace({this.id, this.latitude, this.longitude, this.altitude, this.readCount, this.accuracy});
+
+  static LocationTrace fromMap(Map<String, double> map) {
+    final trace = LocationTrace(
+      id: map["id"].toInt(),
+      latitude: map["latitude"],
+      longitude: map["longitude"],
+      readCount: map["readCount"].toInt(),
+      accuracy: map["accuracy"]
+    );
+    if (map["altitude"] != 0.0) {
+      trace.altitude = map["altitude"];
+    }
+    return trace;
+  }
+
+  @override
+    String toString() {
+      return "LocationTrace(id=$id, lat=$latitude, lng=$longitude, acc=$accuracy, alt=$altitude, readCount=$readCount)";
+    }
+}
+
 class BackgroundLocationUpdates {
   static const LOCATION_SINK_SQLITE = 0x001;
   static const MethodChannel _channel =
@@ -74,20 +104,22 @@ class BackgroundLocationUpdates {
         .map(toPermissionState);
   }
 
-  static Future<List<Map<String, double>>> getLocationTraces() async {
+  static Future<List<LocationTrace>> getLocationTraces() async {
     List<dynamic> traces = await _channel.invokeMethod('getLocationTraces');
     return traces
         .cast<Map<dynamic, dynamic>>()
         .map((trace) => trace.cast<String, double>())
+        .map(LocationTrace.fromMap)
         .toList();
   }
 
-  static Future<List<Map<String, double>>> getUnreadLocationTraces() async {
+  static Future<List<LocationTrace>> getUnreadLocationTraces() async {
     List<dynamic> traces =
         await _channel.invokeMethod('getUnreadLocationTraces');
     return traces
         .cast<Map>()
         .map((trace) => trace.cast<String, double>())
+        .map(LocationTrace.fromMap)
         .toList();
   }
 
