@@ -73,10 +73,9 @@ class _MyAppState extends State<MyApp> {
                   new RaisedButton(
                     color: this.startTrackingButtonColor,
                     onPressed: () async {
-                      bool loc =
-                          await BackgroundLocationUpdates.startTrackingLocation(
-                              BackgroundLocationUpdates.LOCATION_SINK_SQLITE,
-                              requestInterval: const Duration(seconds: 10));
+                      bool loc = await BackgroundLocationUpdates.startTrackingLocation(
+                        iOSStrategy: IOSSignificantLocationChangeStrategy(),
+                        androidStrategy: AndroidBroadcastBasedRequestStrategy(requestInterval:  const Duration(seconds: 30)));
                       setState(() {
                         if (loc) {
                           this.startTrackingButtonColor = Colors.green;

@@ -3,8 +3,8 @@ package io.gjg.backgroundlocationupdates;
 import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.content.Context;
+import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
-import android.util.Log;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +16,9 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
-import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
+import io.gjg.backgroundlocationupdates.locationstrategies.broadcast.LocationUpdatesBroadcastReceiver;
+import io.gjg.backgroundlocationupdates.locationstrategies.periodic.PeriodicLocationTracker;
 import io.gjg.backgroundlocationupdates.persistence.LocationDatabase;
 import io.gjg.backgroundlocationupdates.persistence.LocationEntity;
 
@@ -28,27 +29,7 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
   public static String SHARED_PREFS = "io.gjg.prefs";
   private Context mContext;
   private Activity mActivity;
-  private EventChannel.EventSink eventSink;
-  private Observer stateObserver = new Observer<List<WorkStatus>>() {
-    @Override
-    public void onChanged(@Nullable List<WorkStatus> o) {
-      if (eventSink != null && o != null) {
-        if (o.size() > 0) {
-          switch (o.get(0).getState()) {
-            case CANCELLED:
-            case SUCCEEDED:
-            case BLOCKED:
-              eventSink.success(false);
-              break;
-            case RUNNING:
-            case ENQUEUED:
-              eventSink.success(true);
-              break;
-          }
-        }
-      }
-    }
-  };
+  private EventChannel.EventSink isTrackingActiveEventSink;
 
   private BackgroundLocationUpdatesPlugin(Registrar registrar) {
     this.mContext = registrar.context();
@@ -70,109 +51,157 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
     channel.setMethodCallHandler(new BackgroundLocationUpdatesPlugin(registrar));
   }
 
-  public static <T>List<List<T>> chopIntoParts( final List<T> ls, final int iParts )
-  {
-    final List<List<T>> lsParts = new ArrayList<List<T>>();
-    final int iChunkSize = ls.size() / iParts;
-    int iLeftOver = ls.size() % iParts;
-    int iTake = iChunkSize;
-
-    for( int i = 0, iT = ls.size(); i < iT; i += iTake )
-    {
-      if( iLeftOver > 0 )
-      {
-        iLeftOver--;
-
-        iTake = iChunkSize + 1;
-      }
-      else
-      {
-        iTake = iChunkSize;
-      }
-
-      lsParts.add( new ArrayList<T>( ls.subList( i, Math.min( iT, i + iTake ) ) ) );
-    }
-
-    return lsParts;
-  }
 
   @Override
   public void onMethodCall(MethodCall call, final Result result) {
     if (call.method.equals("getPlatformVersion")) {
       result.success("Android " + android.os.Build.VERSION.RELEASE);
-    } else if (call.method.equals("startTrackingLocation")) {
-      ArrayList<?> arguments = (ArrayList<?>) call.arguments;
-      Integer requestInterval = (Integer) arguments.get(1);
-      mContext.getSharedPreferences(BackgroundLocationUpdatesPlugin.SHARED_PREFS, Context.MODE_PRIVATE)
-              .edit()
-              .putInt(BackgroundLocationUpdatesPlugin.KEY_PERSISTED_REQUEST_INTERVAL, requestInterval)
-              .apply();
-      LocationManagerController.stopLocationTracking();
-      result.success(LocationManagerController.scheduleLocationTracking(requestInterval));
-    } else if (call.method.equals("stopTrackingLocation")) {
-      LocationManagerController.stopLocationTracking();
-      result.success(null);
+    } else if (call.method.equals("trackStart/android-strategy:periodic")) {
+      startTrackingWithPeriodicStrategy(call, result);
+    } else if (call.method.equals("trackStop/android-strategy:periodic")) {
+      stopTrackingWithPeriodicStrategy(result);
+    } else if (call.method.equals("trackStart/android-strategy:broadcast")) {
+      startTrackingWithBroadcastStrategy(call);
+    } else if (call.method.equals("trackStop/android-strategy:broadcast")) {
+      stopTrackingWithBroadcastStrategy();
     } else if (call.method.equals("getLocationTracesCount")) {
-      int traces = LocationDatabase.getLocationDatabase(mContext)
-              .locationDao()
-              .countLocationTraces();
-      result.success(traces);
+      getAllLocationTracesCount(result);
     } else if (call.method.equals("getUnreadLocationTracesCount")) {
-      int traces = LocationDatabase.getLocationDatabase(mContext)
-              .locationDao()
-              .countLocationTracesUnread();
-      result.success(traces);
+      getUnreadLocationTracesCount(result);
     } else if (call.method.equals("getUnreadLocationTraces")) {
-      List<LocationEntity> locationEntities = LocationDatabase.getLocationDatabase(mContext)
-        .locationDao()
-        .getUnread();
-      List<Map<String, Double>> out = new ArrayList<>();
-      for (LocationEntity locationEntity: locationEntities) {
-        out.add(locationEntity.toMap());
-      }
-      result.success(out);
+      getAllUnreadLocationTraces(result);
     } else if (call.method.equals("getLocationTraces")) {
-      List<LocationEntity> locationEntities = LocationDatabase.getLocationDatabase(mContext)
-              .locationDao()
-              .getAll();
-      List<Map<String, Double>> out = new ArrayList<>();
-      for (LocationEntity locationEntity: locationEntities) {
-        out.add(locationEntity.toMap());
-      }
-      result.success(out);
+      getAllLocationTraces(result);
     } else if (call.method.equals("markAsRead")) {
-      List<?> arguments = (List<?>) call.arguments;
-      List<List<Integer>> locationIds = chopIntoParts((List<Integer>) arguments.get(0), 900);
-      int affected = 0;
-      for (List<Integer> chunk: locationIds) {
-        affected += LocationDatabase.getLocationDatabase(mContext)
-                .locationDao()
-                .markAsRead(chunk);
-      }
-      result.success(affected);
+      markLocationTracesAsRead(call, result);
     } else if (call.method.equals("requestPermission")) {
-      if (mActivity != null) {
-        boolean dialogShown = LocationManagerController.requestPermission(mActivity);
-        result.success(dialogShown);
-      } else {
-        result.success(false);
-      }
+      requestPermission(result);
     } else {
       result.notImplemented();
     }
   }
 
+
+  private void stopTrackingWithPeriodicStrategy(Result result) {
+    PeriodicLocationTracker.stopLocationTracking();
+    locationTrackingStopped();
+    result.success(null);
+  }
+
+  private void startTrackingWithPeriodicStrategy(MethodCall call, Result result) {
+    Integer requestInterval = extractAndPersistRequestInterval(call);
+    locationTrackingStarted(requestInterval);
+    PeriodicLocationTracker.stopLocationTracking();
+    PeriodicLocationTracker.scheduleLocationTracking(requestInterval);
+    result.success(true);
+  }
+
+  private void startTrackingWithBroadcastStrategy(MethodCall call) {
+    Integer requestInterval = extractAndPersistRequestInterval(call);
+    locationTrackingStarted(requestInterval);
+    LocationUpdatesBroadcastReceiver.startTrackingBroadcastBased(mContext, requestInterval);
+  }
+
+  private void stopTrackingWithBroadcastStrategy() {
+    locationTrackingStopped();
+    LocationUpdatesBroadcastReceiver.stopTrackingBroadcastBased(mContext);
+  }
+
+
+  private void locationTrackingStopped() {
+    isTrackingActiveEventSink.success(false);
+    mContext.getSharedPreferences(BackgroundLocationUpdatesPlugin.SHARED_PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .remove(KEY_PERSISTED_REQUEST_INTERVAL)
+            .apply();
+  }
+
+  private void locationTrackingStarted(int requestInterval) {
+    isTrackingActiveEventSink.success(true);
+    mContext.getSharedPreferences(BackgroundLocationUpdatesPlugin.SHARED_PREFS, Context.MODE_PRIVATE)
+            .edit()
+            .putInt(BackgroundLocationUpdatesPlugin.KEY_PERSISTED_REQUEST_INTERVAL, requestInterval)
+            .apply();
+  }
+
+
+  private void requestPermission(Result result) {
+    if (mActivity != null) {
+      boolean dialogShown = PeriodicLocationTracker.requestPermission(mActivity);
+      result.success(dialogShown);
+    } else {
+      result.success(false);
+    }
+  }
+
+  private void markLocationTracesAsRead(MethodCall call, Result result) {
+    List<?> arguments = (List<?>) call.arguments;
+    List<List<Integer>> locationIds = Utils.chopIntoParts((List<Integer>) arguments.get(0), 900);
+    int affected = 0;
+    for (List<Integer> chunk: locationIds) {
+      affected += LocationDatabase.getLocationDatabase(mContext)
+              .locationDao()
+              .markAsRead(chunk);
+    }
+    result.success(affected);
+  }
+
+  private void getAllLocationTraces(Result result) {
+    List<LocationEntity> locationEntities = LocationDatabase.getLocationDatabase(mContext)
+            .locationDao()
+            .getAll();
+    List<Map<String, Double>> out = new ArrayList<>();
+    for (LocationEntity locationEntity: locationEntities) {
+      out.add(locationEntity.toMap());
+    }
+    result.success(out);
+  }
+
+  private void getAllUnreadLocationTraces(Result result) {
+    List<LocationEntity> locationEntities = LocationDatabase.getLocationDatabase(mContext)
+      .locationDao()
+      .getUnread();
+    List<Map<String, Double>> out = new ArrayList<>();
+    for (LocationEntity locationEntity: locationEntities) {
+      out.add(locationEntity.toMap());
+    }
+    result.success(out);
+  }
+
+  private void getUnreadLocationTracesCount(Result result) {
+    int traces = LocationDatabase.getLocationDatabase(mContext)
+            .locationDao()
+            .countLocationTracesUnread();
+    result.success(traces);
+  }
+
+  private void getAllLocationTracesCount(Result result) {
+    int traces = LocationDatabase.getLocationDatabase(mContext)
+            .locationDao()
+            .countLocationTraces();
+    result.success(traces);
+  }
+
+
+  @NonNull
+  private Integer extractAndPersistRequestInterval(MethodCall call) {
+    ArrayList<?> arguments = (ArrayList<?>) call.arguments;
+    Integer requestInterval = (Integer) arguments.get(0);
+    return requestInterval;
+  }
+
   @Override
   public void onListen(Object o, EventChannel.EventSink eventSink) {
-    this.eventSink = eventSink;
-      LocationManagerController.isLocationTrackingActive()
-              .observeForever(this.stateObserver);
+    if (mContext.getSharedPreferences(SHARED_PREFS, Context.MODE_PRIVATE).contains(KEY_PERSISTED_REQUEST_INTERVAL)) {
+      eventSink.success(true);
+    } else {
+      eventSink.success(false);
+    }
+    this.isTrackingActiveEventSink = eventSink;
   }
 
   @Override
   public void onCancel(Object o) {
-    LocationManagerController.isLocationTrackingActive()
-            .removeObserver(this.stateObserver);
-    this.eventSink = null;
+    this.isTrackingActiveEventSink = null;
   }
 }

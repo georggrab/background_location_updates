@@ -37,14 +37,16 @@
                 <category android:name="android.intent.category.LAUNCHER"/>
             </intent-filter>
         </activity>
-        <receiver android:name="io.gjg.backgroundlocationupdates.service.BootBroadcastReceiver">
+        <receiver android:name="io.gjg.backgroundlocationupdates.locationstrategies.periodic.PeriodicBootBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>
         </receiver>
-    <service
-    android:exported="false"
-    android:permission="android.permission.BIND_JOB_SERVICE"
-    android:name="io.gjg.androidjobscheduler.AndroidJobScheduler" />
+        <receiver android:name="io.gjg.backgroundlocationupdates.locationstrategies.broadcast.LocationUpdatesBroadcastReceiver"
+            android:exported="true">
+           <intent-filter>
+               <action android:name="io.gjg.backgroundlocationupdates.ACTION_PROCESS_LOCATION_UPDATE" />
+           </intent-filter>
+        </receiver>
     </application>
 </manifest>

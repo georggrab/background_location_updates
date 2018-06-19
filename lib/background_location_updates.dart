@@ -15,6 +15,7 @@
 */
 
 import 'dart:async';
+import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
 
 enum PermissionState { GRANTED, PARTIAL, DENIED }
@@ -62,7 +63,80 @@ class LocationTrace {
     }
 }
 
+abstract class Strategy {
+  Future<bool> invoke(MethodChannel channel);
+  Future<void> revert(MethodChannel channel);
+}
+abstract class AndroidStrategy extends Strategy {}
+
+class AndroidPeriodicRequestStrategy extends AndroidStrategy {
+  Duration requestInterval;
+  AndroidPeriodicRequestStrategy({ this.requestInterval });
+
+  @override
+    Future<bool> invoke(MethodChannel channel) async {
+      final bool success = await channel.invokeMethod('trackStart/android-strategy:periodic', [
+        this.requestInterval.inMilliseconds
+      ]);
+      return success;
+    }
+
+    @override
+      Future<void> revert(MethodChannel channel) async {
+        print('asd');
+        await channel.invokeMethod('trackStop/android-strategy:periodic', []);
+      }
+}
+
+// TODO rest of locationRequest things here
+class AndroidBroadcastBasedRequestStrategy extends AndroidStrategy {
+  Duration requestInterval;
+  AndroidBroadcastBasedRequestStrategy({ this.requestInterval });
+
+  @override
+    Future<bool> invoke(MethodChannel channel) async {
+      final bool success = await channel.invokeMethod('trackStart/android-strategy:broadcast', [
+        this.requestInterval.inMilliseconds
+      ]);
+      return success;
+    }
+
+    @override
+      Future<void> revert(MethodChannel channel) async {
+        await channel.invokeMethod('trackStop/android-strategy:broadcast', []);
+      }
+}
+
+
+abstract class IOSStrategy extends Strategy {}
+class IOSSignificantLocationChangeStrategy extends IOSStrategy {
+  IOSSignificantLocationChangeStrategy();
+  @override
+    Future<bool> invoke(MethodChannel channel) async {
+      final bool success = await channel.invokeMethod('startTrackingLocation', []);
+      return success;
+    }
+    @override
+      Future<void> revert(MethodChannel channel) async {
+        await channel.invokeMethod('stopTrackingLocation', []);
+      }
+}
+
+// TODO implement
+class IOSLocationChangeStrategy extends IOSStrategy {
+  @override
+    Future<bool> invoke(MethodChannel channel) async {
+      final bool success = await channel.invokeMethod('startTrackingLocation', []);
+      return success;
+    }
+    @override
+      Future<void> revert(MethodChannel channel) async {
+        await channel.invokeMethod('stopTrackingLocation', []);
+      }
+}
+
 class BackgroundLocationUpdates {
+  static Strategy lastStrategy;
   static const LOCATION_SINK_SQLITE = 0x001;
   static const MethodChannel _channel =
       const MethodChannel('plugins.gjg.io/background_location_updates');
@@ -73,10 +147,15 @@ class BackgroundLocationUpdates {
   static const EventChannel _permissionStateChangeEvents = const EventChannel(
       'plugins.gjg.io/background_location_updates/permission_state');
 
-  static Future<bool> startTrackingLocation(int sink,
-      {Duration requestInterval}) async {
-    final bool success = await _channel.invokeMethod(
-        'startTrackingLocation', [sink, requestInterval.inMilliseconds]);
+  static Future<bool> startTrackingLocation({AndroidStrategy androidStrategy, IOSStrategy iOSStrategy}) async {
+    bool success;
+    if (Platform.isAndroid) {
+      BackgroundLocationUpdates.lastStrategy = androidStrategy;
+      success = await androidStrategy.invoke(_channel);  
+      } else if (Platform.isIOS) {
+      BackgroundLocationUpdates.lastStrategy = iOSStrategy;
+      success = await iOSStrategy.invoke(_channel);
+    }
     return success;
   }
 
@@ -84,8 +163,13 @@ class BackgroundLocationUpdates {
     return _trackingStateChangeEvents.receiveBroadcastStream().cast<bool>();
   }
 
-  static Future<void> stopTrackingLocation() async {
-    return _channel.invokeMethod('stopTrackingLocation');
+  static Future<bool> stopTrackingLocation() async {
+    if (BackgroundLocationUpdates.lastStrategy == null) {
+      return false;
+    } else {
+      await BackgroundLocationUpdates.lastStrategy.revert(_channel);
+      return true;
+    }
   }
 
   /// Try requesting the permission for tracking the User in the Background Returns a [bool] indicating

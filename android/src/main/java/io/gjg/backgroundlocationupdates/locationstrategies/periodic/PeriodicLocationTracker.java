@@ -1,14 +1,12 @@
-package io.gjg.backgroundlocationupdates;
+package io.gjg.backgroundlocationupdates.locationstrategies.periodic;
 
 import android.Manifest;
 import android.app.Activity;
 import android.arch.lifecycle.LiveData;
 import android.content.Context;
-import android.content.pm.PackageManager;
 import android.location.Location;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
-import android.support.v4.content.ContextCompat;
 import android.util.Log;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
@@ -24,18 +22,19 @@ import androidx.work.OneTimeWorkRequest;
 import androidx.work.WorkManager;
 import androidx.work.WorkStatus;
 import androidx.work.Worker;
+import io.gjg.backgroundlocationupdates.RequestPermissionsHandler;
 import io.gjg.backgroundlocationupdates.persistence.LocationDatabase;
 import io.gjg.backgroundlocationupdates.persistence.LocationEntity;
 
 
-public class LocationManagerController extends Worker {
-    private static final String TRACK_IDENT = LocationManagerController.class.getSimpleName();
-    private static final String TAG = LocationManagerController.class.getSimpleName();
+public class PeriodicLocationTracker extends Worker {
+    private static final String TRACK_IDENT = PeriodicLocationTracker.class.getSimpleName();
+    private static final String TAG = PeriodicLocationTracker.class.getSimpleName();
     private FusedLocationProviderClient mClient;
     private LocationDatabase mLocationDatabase;
 
     public static boolean scheduleLocationTracking(int requestInterval) {
-        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(LocationManagerController.class)
+        OneTimeWorkRequest request = new OneTimeWorkRequest.Builder(PeriodicLocationTracker.class)
                 .setInitialDelay(requestInterval, TimeUnit.MILLISECONDS)
                 .setInputData(
                         new Data.Builder()
@@ -45,10 +44,6 @@ public class LocationManagerController extends Worker {
                 .build();
         WorkManager.getInstance().beginUniqueWork(TRACK_IDENT, ExistingWorkPolicy.REPLACE, request).enqueue();
         return true;
-    }
-
-    public static LiveData<List<WorkStatus>> isLocationTrackingActive() {
-        return WorkManager.getInstance().getStatusesForUniqueWork(TRACK_IDENT);
     }
 
     public static void stopLocationTracking() {
@@ -86,7 +81,7 @@ public class LocationManagerController extends Worker {
             Log.i(TAG, String.format("Location Traces: %d, Unread Location Traces: %d",
                     this.mLocationDatabase.locationDao().countLocationTraces(),
                     this.mLocationDatabase.locationDao().countLocationTracesUnread()));
-            LocationManagerController.scheduleLocationTracking(
+            PeriodicLocationTracker.scheduleLocationTracking(
                     input.getInt("requestInterval", 10000));
             return WorkerResult.SUCCESS;
         } catch (Exception e) {
