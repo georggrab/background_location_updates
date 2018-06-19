@@ -4,6 +4,8 @@ Retrieve periodic location updates, even when the main App is not running. Usefu
 
 The Plugin uses `Significant Location Change` on iOS, and a `WorkManager`-based Periodic Job, combined with a `OnBoot` Broadcast Receiver on Android.
 
+*This Plugin is heavily WIP, shouldn't be used in Production yet, and the API is likely to change by the hour.*
+
 ## Getting Started
 
 ### Get the Package:
@@ -36,6 +38,12 @@ In your `src/main/app/AndroidManifest.xml`, we'll need to register a couple perm
     </application>
 </manifest>
 ```
+
+## iOS Specifics
+
+### Podfile & Swift Language Version
+
+This Plugin will *currently* only work with the Swift Podfile (get it from [here](https://github.com/flutter/flutter/blob/master/packages/flutter_tools/templates/cocoapods/Podfile-swift), replace `ios/Podfile`, delete `ios/Podfile.lock`). Afterwards you'll need to set the Swift Language Version to the latest one in the XCode Project if you haven't already. See [here](https://stackoverflow.com/questions/47743271/the-swift-language-version-swift-version-build-setting-error-with-project-in) for instructions.
 
 ### iOS Permissions
 We'll first have to tell iOS that the app wishes to be started on location updates. Then, we have to justify to the User why we're intending to use their location. Both of these things are taken care of by setting the appropriate keys in `ios/Runner/Info.plist`:
@@ -150,9 +158,15 @@ Receive all Location Traces that have ever been received by the Plugin. It's not
 java.lang.SecurityException: Client must have ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION permission to perform any location operations.
 ```
 
-You forgot adding the required Permissions to your manifest. You even need this on Android O and above. See above for how to extend your manifest.
+You forgot adding the required Permissions to your manifest. If you did, make sure to completely reinstall your app (hot reloads or restarts won't do, you must rerun `flutter run`) You even need this on Android O and above. See above for how to extend your manifest.
 
+### The whole App is crashing on iOS when starting Location Tracking
 
+Make sure you've added `location` to the `BackgroundModes` in your `Info.plist`.
+
+### The App works on iOS, but nothing is happening
+
+Make sure you've added all three Usage Descriptions to your `Info.plist`, as outlined above. If you have, run the App with XCode, look at the Log, and file an issue if you feel there is something wrong with this library.
 
 
 For help getting started with Flutter, view our online
