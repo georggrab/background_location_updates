@@ -5,10 +5,6 @@ import 'package:background_location_updates/background_location_updates.dart';
 
 void main() => runApp(new MyApp());
 
-void test() {
-  print('test');
-}
-
 class MyApp extends StatefulWidget {
   @override
   _MyAppState createState() => new _MyAppState();
@@ -28,6 +24,7 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
+    BackgroundLocationUpdates.streamLocationActive().first;
     BackgroundLocationUpdates.streamLocationActive().listen((bool state) {
       print('State: $state');
       setState(() {
