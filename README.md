@@ -144,6 +144,15 @@ int unreadCount = await BackgroundLocationUpdates.getUnreadLocationTracesCount()
 int totalCount = await BackgroundLocationUpdates.getLocationTracesCount();
 ```
 
+### Keep informed about the State of the Plugin
+
+```dart
+BackgroundLocationUpdates.streamLocationActive().listen((bool state) {
+    ...
+});
+```
+
+
 ### Getting all Location Traces
 
 ```dart

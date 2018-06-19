@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'dart:async';
 
-import 'package:flutter/services.dart';
 import 'package:background_location_updates/background_location_updates.dart';
-import 'package:android_job_scheduler/android_job_scheduler.dart';
 
 void main() => runApp(new MyApp());
 
@@ -17,7 +15,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  String _platformVersion = 'Unknown';
   List<Map<String, double>> traces = [];
   int tracesCount;
   Color startTrackingButtonColor = Colors.grey;
