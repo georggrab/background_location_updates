@@ -2,9 +2,7 @@
 
 Retrieve periodic location updates, even when the main App is not running. Useful for Navigation Apps to keep a rough idea of where the User is heading, and various other purposes. Please don't be evil though, and tell the User exactly how, when and why you wish to retrieve her location.
 
-The Plugin uses `Background Location` on iOS, and a `WorkManager`-based Periodic Job, combined with a `OnBoot` Broadcast Receiver on Android.
-
-**Currently doesn't work on iOS!**
+The Plugin uses `Significant Location Change` on iOS, and a `WorkManager`-based Periodic Job, combined with a `OnBoot` Broadcast Receiver on Android.
 
 ## Getting Started
 
