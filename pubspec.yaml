@@ -1,8 +1,8 @@
 name: background_location_updates
-description: A new flutter plugin project.
+description:  Flutter Plugin providing access to the Device Location, even when the app is not running. 
 version: 0.0.1
-author:
-homepage:
+author: Georg Grab <g.j.grab.dev@gmail.com>
+homepage: https://github.com/talkdirty/background_location_updates
 
 dependencies:
   flutter:
@@ -10,6 +10,9 @@ dependencies:
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
+
+environment:
+  sdk: ">=1.19.0 <2.0.0"
 
 # The following section is specific to Flutter.
 flutter:
