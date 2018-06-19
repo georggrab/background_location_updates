@@ -17,18 +17,18 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
-enum PermissionState {
-  GRANTED,
-  PARTIAL,
-  DENIED
-}
+enum PermissionState { GRANTED, PARTIAL, DENIED }
 
 PermissionState toPermissionState(int nativeCode) {
-  switch(nativeCode) {
-    case 1: return PermissionState.GRANTED;
-    case 2: return PermissionState.PARTIAL;
-    case 3: return PermissionState.DENIED;
-    default: throw 'Constructed invalid permissionState from native code: $nativeCode';
+  switch (nativeCode) {
+    case 1:
+      return PermissionState.GRANTED;
+    case 2:
+      return PermissionState.PARTIAL;
+    case 3:
+      return PermissionState.DENIED;
+    default:
+      throw 'Constructed invalid permissionState from native code: $nativeCode';
   }
 }
 
@@ -37,14 +37,16 @@ class BackgroundLocationUpdates {
   static const MethodChannel _channel =
       const MethodChannel('plugins.gjg.io/background_location_updates');
 
-  static const EventChannel _trackingStateChangeEvents =
-      const EventChannel('plugins.gjg.io/background_location_updates/tracking_state');
+  static const EventChannel _trackingStateChangeEvents = const EventChannel(
+      'plugins.gjg.io/background_location_updates/tracking_state');
 
-  static const EventChannel _permissionStateChangeEvents =
-      const EventChannel('plugins.gjg.io/background_location_updates/permission_state');
+  static const EventChannel _permissionStateChangeEvents = const EventChannel(
+      'plugins.gjg.io/background_location_updates/permission_state');
 
-  static Future<bool> startTrackingLocation(int sink, {Duration requestInterval}) async {
-    final bool success = await _channel.invokeMethod('startTrackingLocation', [sink, requestInterval.inMilliseconds]);
+  static Future<bool> startTrackingLocation(int sink,
+      {Duration requestInterval}) async {
+    final bool success = await _channel.invokeMethod(
+        'startTrackingLocation', [sink, requestInterval.inMilliseconds]);
     return success;
   }
 
@@ -59,27 +61,39 @@ class BackgroundLocationUpdates {
   /// Try requesting the permission for tracking the User in the Background Returns a [bool] indicating
   /// if a dialogBox requesting the permission has been shown to the User.
   static Future<bool> requestPermission() async {
-    final bool permissionDialogShown = await _channel.invokeMethod('requestPermission');
+    final bool permissionDialogShown =
+        await _channel.invokeMethod('requestPermission');
     return permissionDialogShown;
   }
 
   /// Get a Stream representing the Permission State of the Background Tracking
   static Stream<PermissionState> getPermissionState() {
-    return _permissionStateChangeEvents.receiveBroadcastStream().cast<int>().map(toPermissionState);
+    return _permissionStateChangeEvents
+        .receiveBroadcastStream()
+        .cast<int>()
+        .map(toPermissionState);
   }
 
   static Future<List<Map<String, double>>> getLocationTraces() async {
     List<dynamic> traces = await _channel.invokeMethod('getLocationTraces');
-    return traces.cast<Map<dynamic, dynamic>>().map((trace) => trace.cast<String, double>()).toList();
+    return traces
+        .cast<Map<dynamic, dynamic>>()
+        .map((trace) => trace.cast<String, double>())
+        .toList();
   }
 
   static Future<List<Map<String, double>>> getUnreadLocationTraces() async {
-    List<dynamic> traces = await _channel.invokeMethod('getUnreadLocationTraces');
-    return traces.cast<Map>().map((trace) => trace.cast<String, double>()).toList();
+    List<dynamic> traces =
+        await _channel.invokeMethod('getUnreadLocationTraces');
+    return traces
+        .cast<Map>()
+        .map((trace) => trace.cast<String, double>())
+        .toList();
   }
 
   static Future<int> getUnreadLocationTracesCount() async {
-    final int count = await _channel.invokeMethod('getUnreadLocationTracesCount');
+    final int count =
+        await _channel.invokeMethod('getUnreadLocationTracesCount');
     return count;
   }
 
