@@ -43,7 +43,9 @@ In your `src/main/app/AndroidManifest.xml`, we'll need to register a couple perm
 
 ### Podfile & Swift Language Version
 
-This Plugin will *currently* only work with the Swift Podfile (get it from [here](https://github.com/flutter/flutter/blob/master/packages/flutter_tools/templates/cocoapods/Podfile-swift), replace `ios/Podfile`, delete `ios/Podfile.lock`). Afterwards you'll need to set the Swift Language Version to the latest one in the XCode Project if you haven't already. See [here](https://stackoverflow.com/questions/47743271/the-swift-language-version-swift-version-build-setting-error-with-project-in) for instructions.
+**You don't have to do this if you created your project with `flutter create ... -i swift`.**
+This Plugin will only work with the Swift Podfile (get it from [here](https://github.com/flutter/flutter/blob/master/packages/flutter_tools/templates/cocoapods/Podfile-swift), replace `ios/Podfile`, delete `ios/Podfile.lock`). Afterwards you'll need to set the Swift Language Version to the latest one in the XCode Project if you haven't already. See [here](https://stackoverflow.com/questions/47743271/the-swift-language-version-swift-version-build-setting-error-with-project-in) for instructions.
+
 
 ### iOS Permissions
 We'll first have to tell iOS that the app wishes to be started on location updates. Then, we have to justify to the User why we're intending to use their location. Both of these things are taken care of by setting the appropriate keys in `ios/Runner/Info.plist`:
