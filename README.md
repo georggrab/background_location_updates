@@ -61,6 +61,12 @@ need basic Location Services (while the App is running). -->
 <string>Selling it on the black market</string>
 ```
 
+### Importing the Package
+
+```dart
+import 'package:background_location_updates/background_location_updates.dart';
+```
+
 ### Requesting Permissions
 ```dart
 await BackgroundLocationUpdates.requestPermission()
@@ -135,6 +141,19 @@ List<Map<String, double>> traces = await BackgroundLocationUpdates.getLocationTr
 ```
 
 Receive all Location Traces that have ever been received by the Plugin. It's not recommended to use this method.
+
+## FAQ
+
+### I'm getting a SecurityException on Android when a new location is arriving
+
+```
+java.lang.SecurityException: Client must have ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION permission to perform any location operations.
+```
+
+You forgot adding the required Permissions to your manifest. You even need this on Android O and above. See above for how to extend your manifest.
+
+
+
 
 For help getting started with Flutter, view our online
 [documentation](https://flutter.io/).
