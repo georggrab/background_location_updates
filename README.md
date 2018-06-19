@@ -14,7 +14,7 @@ Add the following to your `pubspec.yml`:
 
 ```yaml
 dependencies:
-  background_location_updates: ^0.0.2
+  background_location_updates: ^0.1.0
 ```
 
 ### Android Permissions
@@ -134,25 +134,10 @@ await BackgroundLocationUpdates.stopTrackingLocation();
 Location traces should be primarily received through this method.
 
 ```dart
-List<Map<String, double>> traces = await BackgroundLocationUpdates.getUnreadLocationTraces();
+List<LocationTrace> traces = await BackgroundLocationUpdates.getUnreadLocationTraces();
 ```
 
-This will retrieve all location traces that have not been previously marked as read. This means, you can call this method when your App is started in order to receive all Location Updates that happened in the time since your App was last opened. Currently, a Map of the following values is returned. **This will soon change**.
-
-
-```dart
-{
-    // ID of the Trace
-    "id": 0.0,
-    "latitude": 23.2,
-    "longitude": 212.2,
-    // Recorded altitude. May be zero if it couldn't be measured by the Device.
-    "altitude": 0.0,
-    // UNIX Timestamp of when the Update occured
-    "time": 15124124235324523.0,
-    // How often the Trace has been marked as read with markAsRead()
-    "readCount": 0.0,
-}
+This will retrieve all location traces that have not been previously marked as read. This means, you can call this method when your App is started in order to receive all Location Updates that happened in the time since your App was last opened. A List of Objects of type `LocationTrace` will be returned.
 ```
 
 ### Marking Location Traces as read
@@ -160,7 +145,7 @@ After you've processed the Unread Location Traces, you can mark them as read, so
 
 ```dart
 await BackgroundLocationUpdates.markAsRead(
-    traces.map((trace) => trace["id"].toInt()).asList()
+    traces.map((trace) => trace.id).asList()
 );
 ```
 
@@ -184,7 +169,7 @@ BackgroundLocationUpdates.streamLocationActive().listen((bool state) {
 ### Getting all Location Traces
 
 ```dart
-List<Map<String, double>> traces = await BackgroundLocationUpdates.getLocationTraces();
+List<LocationTrace> traces = await BackgroundLocationUpdates.getLocationTraces();
 ```
 
 Receive all Location Traces that have ever been received by the Plugin. It's not recommended to use this method.
