@@ -29,7 +29,6 @@ import io.gjg.backgroundlocationupdates.persistence.LocationEntity;
 
 
 public class LocationManagerController extends Worker {
-    private static final int PERMISSION_REQUEST_FINE_LOCATION = 0x0424242;
     private static final String TRACK_IDENT = LocationManagerController.class.getSimpleName();
     private static final String TAG = LocationManagerController.class.getSimpleName();
     private FusedLocationProviderClient mClient;
@@ -56,11 +55,12 @@ public class LocationManagerController extends Worker {
         WorkManager.getInstance().cancelUniqueWork(TRACK_IDENT);
     }
 
-    public static void requestPermission(Context context) {
-        if (ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED ||
-                ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_FINE_LOCATION);
+    public static boolean requestPermission(Context context) {
+        if (!RequestPermissionsHandler.hasPermission(context)) {
+            ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, RequestPermissionsHandler.PERMISSION_REQUEST_FINE_LOCATION);
+            return true;
         }
+        return false;
     }
 
     @NonNull

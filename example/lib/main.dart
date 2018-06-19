@@ -13,6 +13,7 @@ class MyApp extends StatefulWidget {
 class _MyAppState extends State<MyApp> {
   List<Map<String, double>> traces = [];
   int tracesCount;
+  String _permissionState;
   Color startTrackingButtonColor = Colors.grey;
   Color isActiveColor = Colors.grey;
 
@@ -33,6 +34,12 @@ class _MyAppState extends State<MyApp> {
         } else {
           isActiveColor = Colors.red;
         }
+      });
+    });
+
+    BackgroundLocationUpdates.getPermissionState().listen((PermissionState state) {
+      setState(() {
+        _permissionState = state.toString();         
       });
     });
 
@@ -113,7 +120,9 @@ class _MyAppState extends State<MyApp> {
                       await BackgroundLocationUpdates.markAsRead(ids);
                       this.updateUnread();
                     },
-                  )
+                  ), new Text(
+                    'Permission State: $_permissionState'
+                  ),
                 ],
               ),
               Flexible(

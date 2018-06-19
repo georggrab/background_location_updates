@@ -17,13 +17,31 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
+enum PermissionState {
+  GRANTED,
+  PARTIAL,
+  DENIED
+}
+
+PermissionState toPermissionState(int nativeCode) {
+  switch(nativeCode) {
+    case 1: return PermissionState.GRANTED;
+    case 2: return PermissionState.PARTIAL;
+    case 3: return PermissionState.DENIED;
+    default: throw 'Constructed invalid permissionState from native code: $nativeCode';
+  }
+}
+
 class BackgroundLocationUpdates {
   static const LOCATION_SINK_SQLITE = 0x001;
   static const MethodChannel _channel =
       const MethodChannel('plugins.gjg.io/background_location_updates');
 
-  static const EventChannel _events =
+  static const EventChannel _trackingStateChangeEvents =
       const EventChannel('plugins.gjg.io/background_location_updates/tracking_state');
+
+  static const EventChannel _permissionStateChangeEvents =
+      const EventChannel('plugins.gjg.io/background_location_updates/permission_state');
 
   static Future<bool> startTrackingLocation(int sink, {Duration requestInterval}) async {
     final bool success = await _channel.invokeMethod('startTrackingLocation', [sink, requestInterval.inMilliseconds]);
@@ -31,15 +49,23 @@ class BackgroundLocationUpdates {
   }
 
   static Stream<bool> streamLocationActive() {
-    return _events.receiveBroadcastStream().cast<bool>();
+    return _trackingStateChangeEvents.receiveBroadcastStream().cast<bool>();
   }
 
   static Future<void> stopTrackingLocation() async {
     return _channel.invokeMethod('stopTrackingLocation');
   }
 
-  static Future<void> requestPermission() async {
-    return _channel.invokeMethod('requestPermission');
+  /// Try requesting the permission for tracking the User in the Background Returns a [bool] indicating
+  /// if a dialogBox requesting the permission has been shown to the User.
+  static Future<bool> requestPermission() async {
+    final bool permissionDialogShown = await _channel.invokeMethod('requestPermission');
+    return permissionDialogShown;
+  }
+
+  /// Get a Stream representing the Permission State of the Background Tracking
+  static Stream<PermissionState> getPermissionState() {
+    return _permissionStateChangeEvents.receiveBroadcastStream().cast<int>().map(toPermissionState);
   }
 
   static Future<List<Map<String, double>>> getLocationTraces() async {

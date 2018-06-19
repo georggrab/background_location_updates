@@ -16,6 +16,7 @@ import io.flutter.plugin.common.MethodCall;
 import io.flutter.plugin.common.MethodChannel;
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler;
 import io.flutter.plugin.common.MethodChannel.Result;
+import io.flutter.plugin.common.PluginRegistry;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.gjg.backgroundlocationupdates.persistence.LocationDatabase;
 import io.gjg.backgroundlocationupdates.persistence.LocationEntity;
@@ -54,6 +55,13 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
     this.mActivity = registrar.activity();
     new EventChannel(registrar.messenger(), "plugins.gjg.io/background_location_updates/tracking_state")
         .setStreamHandler(this);
+
+    RequestPermissionsHandler requestPermissionsHandler = new RequestPermissionsHandler(mContext);
+    registrar.addRequestPermissionsResultListener(requestPermissionsHandler);
+    new EventChannel(registrar.messenger(), "plugins.gjg.io/background_location_updates/permission_state")
+      .setStreamHandler(requestPermissionsHandler);
+
+
   }
 
   /** Plugin registration. */
@@ -144,8 +152,8 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
       result.success(affected);
     } else if (call.method.equals("requestPermission")) {
       if (mActivity != null) {
-        LocationManagerController.requestPermission(mActivity);
-        result.success(true);
+        boolean dialogShown = LocationManagerController.requestPermission(mActivity);
+        result.success(dialogShown);
       } else {
         result.success(false);
       }
