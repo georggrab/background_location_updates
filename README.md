@@ -83,6 +83,34 @@ await BackgroundLocationUpdates.requestPermission()
 ```
 On both Android and iOS, this will show a Permission Request Alertbox to the User. After the User has consented, further calls to this method will have no effect, and the other API Methods described below will work as intended.
 
+### Get Permission State
+
+```dart
+BackgroundLocationUpdates.getPermissionState().listen((PermissionState state) {
+    ...
+});
+// alternatively
+PermissionState current = await BackgroundLocationUpdates.getPermissionState().first;
+```
+
+The PermissionState can take on the following values:
+
+```dart
+// Everything is fine, the User
+// has granted Always on Permission
+PermissionState.GRANTED
+
+// You will only receive this on iOS 11+:
+// The User has only granted your app to use
+// location services when it is in use
+PermissionState.PARTIAL
+
+// The User denied your request
+PermissionState.DENIED
+```
+
+The only way to change a `Partial` or `Denied` PermissionState is through the Phone Settings. You should however respect the decision the User has made and implement reacting to these Permission States appropriately.
+
 ### Starting Location Tracking
 
 After you've asked the User for appropriate permissions (read up on GDPR!), start the Location Tracking.
