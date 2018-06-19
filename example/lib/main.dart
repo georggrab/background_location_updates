@@ -31,17 +31,8 @@ class _MyAppState extends State<MyApp> {
 
   // Platform messages are asynchronous, so we initialize in an async method.
   Future<void> initPlatformState() async {
-    String platformVersion;
-    // Platform messages may fail, so we use a try/catch PlatformException.
-    try {
-      platformVersion = await BackgroundLocationUpdates.platformVersion;
-      await AndroidJobScheduler.scheduleOnce(
-          const Duration(seconds: 10), 42, test);
-    } on PlatformException {
-      platformVersion = 'Failed to get platform version.';
-    }
-
     BackgroundLocationUpdates.streamLocationActive().listen((bool state) {
+      print('State: $state');
       setState(() {
         if (state) {
           isActiveColor = Colors.green;
@@ -55,21 +46,15 @@ class _MyAppState extends State<MyApp> {
     // message was in flight, we want to discard the reply rather than calling
     // setState to update our non-existent appearance.
     if (!mounted) return;
-
-    setState(() {
-      _platformVersion = platformVersion;
-    });
   }
 
   void updateUnread() async {
-                      int traces = await BackgroundLocationUpdates
-                          .getUnreadLocationTracesCount();
-                      var unread = await BackgroundLocationUpdates
-                          .getUnreadLocationTraces();
-                      setState(() {
-                        tracesCount = traces;
-                        this.traces = unread;
-                      });
+    int traces = await BackgroundLocationUpdates.getUnreadLocationTracesCount();
+    var unread = await BackgroundLocationUpdates.getUnreadLocationTraces();
+    setState(() {
+      tracesCount = traces;
+      this.traces = unread;
+    });
   }
 
   @override
@@ -87,8 +72,8 @@ class _MyAppState extends State<MyApp> {
                   new RaisedButton(
                     color: this.startTrackingButtonColor,
                     onPressed: () async {
-                      bool loc = await BackgroundLocationUpdates
-                          .startTrackingLocation(
+                      bool loc =
+                          await BackgroundLocationUpdates.startTrackingLocation(
                               BackgroundLocationUpdates.LOCATION_SINK_SQLITE,
                               requestInterval: const Duration(seconds: 10));
                       setState(() {
@@ -110,7 +95,7 @@ class _MyAppState extends State<MyApp> {
                   new RaisedButton(
                     child: const Text('Is active?'),
                     color: isActiveColor,
-                    onPressed: null,
+                    onPressed: () {},
                   ),
                   new RaisedButton(
                     child: const Text('Request Permission'),
@@ -127,7 +112,8 @@ class _MyAppState extends State<MyApp> {
                   new RaisedButton(
                     child: new Text("Mark all displayed unread as read"),
                     onPressed: () async {
-                      List<int> ids = this.traces.map((Map<String, double> trace) {
+                      List<int> ids =
+                          this.traces.map((Map<String, double> trace) {
                         return trace["id"].toInt();
                       }).toList();
                       await BackgroundLocationUpdates.markAsRead(ids);

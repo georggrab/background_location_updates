@@ -10,11 +10,6 @@ class BackgroundLocationUpdates {
   static const EventChannel _events =
       const EventChannel('plugins.gjg.io/background_location_updates/tracking_state');
 
-  static Future<String> get platformVersion async {
-    final String version = await _channel.invokeMethod('getPlatformVersion');
-    return version;
-  }
-
   static Future<bool> startTrackingLocation(int sink, {Duration requestInterval}) async {
     final bool success = await _channel.invokeMethod('startTrackingLocation', [sink, requestInterval.inMilliseconds]);
     return success;

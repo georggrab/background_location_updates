@@ -28,12 +28,12 @@ end
 
 target 'Runner' do
     use_frameworks!
-    
+
     # Prepare symlinks folder. We use symlinks to avoid having Podfile.lock
     # referring to absolute paths on developers' machines.
     system('rm -rf .symlinks')
     system('mkdir -p .symlinks/plugins')
-    
+
     # Flutter Pods
     generated_xcode_build_settings = parse_KV_file('./Flutter/Generated.xcconfig')
     if generated_xcode_build_settings.empty?
