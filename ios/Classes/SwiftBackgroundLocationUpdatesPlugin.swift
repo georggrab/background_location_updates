@@ -4,18 +4,25 @@ import CoreLocation
 
 public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLocationManagerDelegate {
     internal var trackingStateChangeHandler: TrackingStateChangeHandler?
+    internal var permissionStateHandler: PermissionStateHandler?
     internal var activityEventChannel : FlutterEventChannel?
+    internal var permissionChannel : FlutterEventChannel?
     internal var persistor: Persistence?
     internal var manager: CLLocationManager?
     
-    public override init() {
-        super.init()
-    }
-    
     public func register(with registrar: FlutterPluginRegistrar) {
         self.trackingStateChangeHandler = TrackingStateChangeHandler()
-        self.activityEventChannel = FlutterEventChannel(name: "plugins.gjg.io/background_location_updates/tracking_state", binaryMessenger: registrar.messenger())
+        self.permissionStateHandler = PermissionStateHandler()
+        
+        self.permissionChannel =
+            FlutterEventChannel(name: "plugins.gjg.io/background_location_updates/permission_state", binaryMessenger: registrar.messenger())
+        self.permissionChannel?.setStreamHandler(self.permissionStateHandler)
+        
+        self.activityEventChannel =
+            FlutterEventChannel(name: "plugins.gjg.io/background_location_updates/tracking_state", binaryMessenger: registrar.messenger())
         self.activityEventChannel?.setStreamHandler(self.trackingStateChangeHandler)
+
+        
         registrar.addApplicationDelegate(self)
     }
     
@@ -80,9 +87,12 @@ public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLo
         }
         ensurePersistor()
         for location in locations {
-            NSLog("Location: lat=%f lng=%f alt=%f speed=%f, acc=%f", location.coordinate.latitude, location.coordinate.longitude, location.altitude, location.speed, location.horizontalAccuracy)
             self.persistor?.persist(location)
         }
+    }
+    
+    public func locationManager(_ manager: CLLocationManager, didChangeAuthorization status: CLAuthorizationStatus) {
+        self.permissionStateHandler?.propagate(state: PermissionStateHandler.getPermissionEnum(from: status))
     }
     
     private func initManager() {

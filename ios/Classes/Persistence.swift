@@ -26,6 +26,7 @@ class Persistence {
         return urls[urls.count - 1].appendingPathComponent("plugins.gjg.io_background_location_updates.sqlite.db").absoluteString
     }
     
+    @discardableResult
     func createSchema() -> Bool {
         let result = try? connection.run(Persistence.traces.create(ifNotExists: true) { t in
             t.column(Persistence.id, primaryKey: .autoincrement)
@@ -39,6 +40,7 @@ class Persistence {
         return result != nil
     }
     
+    @discardableResult
     func persist(_ loc: CLLocation) -> Int64? {
         return try? connection.run(Persistence.traces.insert(
             Persistence.latitude <- loc.coordinate.latitude.datatypeValue,
@@ -87,6 +89,7 @@ class Persistence {
         return traces
     }
     
+    @discardableResult
     func markAsRead(_ ids: Array<Int>) -> Int? {
         let i64Ids = ids.map { (i: Int) -> Int64 in
             Int64(i)
