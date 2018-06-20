@@ -15,6 +15,7 @@ class _MyAppState extends State<MyApp> {
   int tracesCount;
   String _permissionState;
   Color isActiveColor = Colors.grey;
+  String sqlitePath = "SqlitePath";
 
   @override
   void initState() {
@@ -112,6 +113,16 @@ class _MyAppState extends State<MyApp> {
                     child: new Text("Unread Location Traces: $tracesCount"),
                     onPressed: () async {
                       this.updateUnread();
+                    },
+                  ),
+                  new RaisedButton(
+                    child: new Text("$sqlitePath"),
+                    onPressed: () async {
+                      String path = await BackgroundLocationUpdates
+                          .getSqliteDatabasePath();
+                      setState(() {
+                        sqlitePath = path;
+                      });
                     },
                   ),
                   new RaisedButton(

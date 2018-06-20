@@ -76,9 +76,16 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
       markLocationTracesAsRead(call, result);
     } else if (call.method.equals("requestPermission")) {
       requestPermission(result);
+    } else if (call.method.equals("getSqliteDatabasePath")) {
+      getSqliteDatabasePath(result);
     } else {
       result.notImplemented();
     }
+  }
+
+  private void getSqliteDatabasePath(Result result) {
+    String path = mContext.getDatabasePath("locations").getAbsolutePath();
+    result.success(path);
   }
 
 

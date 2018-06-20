@@ -275,6 +275,27 @@ BackgroundLocationUpdates.streamLocationActive().listen((bool state) {
 });
 ```
 
+### Getting the internal Sqlite DB Path
+
+You can retrieve the path of the internal Sqlite Database used for storing the Location Traces, and use it for your own needs with something like [SqFlite](https://github.com/tekartik/sqflite).
+
+```dart
+final String db = await BackgroundLocationUpdates.getSqliteDatabasePath();
+```
+
+Here's the Schema used on both iOS and Android.
+
+```sql
+CREATE TABLE `location` (
+    `id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, 
+    `accuracy` REAL NOT NULL, 
+    `longitude` REAL NOT NULL, 
+    `latitude` REAL NOT NULL, 
+    `altitude` REAL NOT NULL, 
+    `time` INTEGER NOT NULL, 
+    `read_count` INTEGER NOT NULL);
+```
+
 
 ### Getting all Location Traces
 

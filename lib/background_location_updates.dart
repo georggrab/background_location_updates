@@ -231,6 +231,11 @@ class BackgroundLocationUpdates {
         .toList();
   }
 
+  static Future<String> getSqliteDatabasePath() async {
+    final String path = await _channel.invokeMethod('getSqliteDatabasePath');
+    return path;
+  }
+
   static Future<int> getUnreadLocationTracesCount() async {
     final int count =
         await _channel.invokeMethod('getUnreadLocationTracesCount');

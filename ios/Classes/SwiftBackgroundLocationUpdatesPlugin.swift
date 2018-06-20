@@ -108,6 +108,8 @@ public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLo
             ensurePersistor()
             let args = (call.arguments as! Array<Any>)[0] as! Array<Int>
             let _ = persistor?.markAsRead(args)
+        case "getSqliteDatabasePath":
+            result(Persistence.getSqliteDbFileName())
         default:
             result(FlutterMethodNotImplemented)
         }
