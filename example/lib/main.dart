@@ -75,8 +75,7 @@ class _MyAppState extends State<MyApp> {
                     onPressed: () async {
                       await BackgroundLocationUpdates.startTrackingLocation(
                           iOSStrategy: IOSSignificantLocationChangeStrategy(
-                            desiredAccuracy: IOSStrategy.ACCURACY_BEST
-                          ),
+                              desiredAccuracy: IOSStrategy.ACCURACY_BEST),
                           androidStrategy: AndroidBroadcastBasedRequestStrategy(
                               requestInterval: const Duration(seconds: 30)));
                     },
@@ -86,8 +85,7 @@ class _MyAppState extends State<MyApp> {
                     onPressed: () async {
                       await BackgroundLocationUpdates.startTrackingLocation(
                           iOSStrategy: IOSLocationChangeStrategy(
-                            desiredAccuracy: IOSStrategy.ACCURACY_BEST
-                          ),
+                              desiredAccuracy: IOSStrategy.ACCURACY_BEST),
                           androidStrategy: AndroidPeriodicRequestStrategy(
                               requestInterval: const Duration(seconds: 10)));
                     },

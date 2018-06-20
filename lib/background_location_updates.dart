@@ -124,29 +124,33 @@ abstract class IOSStrategy extends Strategy {
 class IOSSignificantLocationChangeStrategy extends IOSStrategy {
   int desiredAccuracy;
 
-  IOSSignificantLocationChangeStrategy({this.desiredAccuracy = IOSStrategy.ACCURACY_HUNDRED_METERS});
+  IOSSignificantLocationChangeStrategy(
+      {this.desiredAccuracy = IOSStrategy.ACCURACY_HUNDRED_METERS});
   @override
   Future<bool> invoke(MethodChannel channel) async {
-    final bool success =
-        await channel.invokeMethod('trackStart/ios-strategy:significant-location-change', [desiredAccuracy]);
+    final bool success = await channel.invokeMethod(
+        'trackStart/ios-strategy:significant-location-change',
+        [desiredAccuracy]);
     return success;
   }
 
   @override
   Future<void> revert(MethodChannel channel) async {
-    await channel.invokeMethod('trackStop/ios-strategy:significant-location-change', []);
+    await channel
+        .invokeMethod('trackStop/ios-strategy:significant-location-change', []);
   }
 }
 
 class IOSLocationChangeStrategy extends IOSStrategy {
   int desiredAccuracy;
 
-  IOSLocationChangeStrategy({this.desiredAccuracy = IOSStrategy.ACCURACY_HUNDRED_METERS });
+  IOSLocationChangeStrategy(
+      {this.desiredAccuracy = IOSStrategy.ACCURACY_HUNDRED_METERS});
 
   @override
   Future<bool> invoke(MethodChannel channel) async {
-    final bool success =
-        await channel.invokeMethod('trackStart/ios-strategy:location-change', [desiredAccuracy]);
+    final bool success = await channel.invokeMethod(
+        'trackStart/ios-strategy:location-change', [desiredAccuracy]);
     return success;
   }
 
