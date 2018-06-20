@@ -4,11 +4,13 @@ import android.Manifest;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 
 import io.flutter.plugin.common.EventChannel;
 import io.flutter.plugin.common.PluginRegistry;
 
 public class RequestPermissionsHandler implements PluginRegistry.RequestPermissionsResultListener, EventChannel.StreamHandler {
+    private static final String TAG = RequestPermissionsHandler.class.getSimpleName();
     public static final int PERMISSION_REQUEST_FINE_LOCATION = 0x0424242;
     private final Context mContext;
     private RequestPermissionsHandler.PermissionResult result;
@@ -20,25 +22,26 @@ public class RequestPermissionsHandler implements PluginRegistry.RequestPermissi
 
     @Override
     public boolean onRequestPermissionsResult(int i, String[] strings, int[] ints) {
-        if (i == PERMISSION_REQUEST_FINE_LOCATION) {
-            result = PermissionResult.GRANTED;
+        if (i == PERMISSION_REQUEST_FINE_LOCATION && ints.length == 1) {
+            this.result = ints[0] == PackageManager.PERMISSION_GRANTED?
+                    PermissionResult.GRANTED : PermissionResult.DENIED;
         } else {
-            result = PermissionResult.DENIED;
+            this.result = PermissionResult.DENIED;
         }
         this.sink.success(this.result.result);
+        Log.v(TAG, String.format("onRequestPermissionsResult: %s", this.result));
         return true;
     }
 
     @Override
     public void onListen(Object o, EventChannel.EventSink eventSink) {
         this.sink = eventSink;
-        if (this.result == null) {
-            if (RequestPermissionsHandler.hasPermission(this.mContext)) {
-                this.result = PermissionResult.GRANTED;
-            } else {
-                this.result = PermissionResult.DENIED;
-            }
+        if (RequestPermissionsHandler.hasPermission(this.mContext)) {
+            this.result = PermissionResult.GRANTED;
+        } else {
+            this.result = PermissionResult.DENIED;
         }
+        Log.v(TAG, String.format("Permission Granted: %s", this.result));
         this.sink.success(this.result.result);
     }
 

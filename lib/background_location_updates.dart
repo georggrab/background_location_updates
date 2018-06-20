@@ -198,10 +198,12 @@ class BackgroundLocationUpdates {
 
   /// Try requesting the permission for tracking the User in the Background Returns a [bool] indicating
   /// if a dialogBox requesting the permission has been shown to the User.
-  static Future<bool> requestPermission() async {
-    final bool permissionDialogShown =
-        await _channel.invokeMethod('requestPermission');
-    return permissionDialogShown;
+  static Future<PermissionState> requestPermission() async {
+    if (await getPermissionState().first == PermissionState.GRANTED) {
+      return PermissionState.GRANTED;
+    }
+    await _channel.invokeMethod('requestPermission');
+    return getPermissionState().take(2).last;
   }
 
   /// Get a Stream representing the Permission State of the Background Tracking
