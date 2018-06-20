@@ -5,6 +5,36 @@ Before integrating this Plugin in your app, please read [this](https://www.datap
 
 *This Plugin is heavily WIP, shouldn't be used in Production yet, and the API is likely to change by the hour.*
 
+## Table of Contents
+
+* [background_location_updates](#background_location_updates)
+    * [Getting Started](#getting-started)
+        * [Get the Package:](#get-the-package)
+        * [Android Permissions](#android-permissions)
+        * [iOS Specifics](#ios-specifics)
+        * [Podfile &amp; Swift Language Version](#podfile--swift-language-version)
+        * [iOS Permissions](#ios-permissions)
+    * [Documentation](#documentation)
+        * [Importing the Package](#importing-the-package)
+        * [Requesting Permissions](#requesting-permissions)
+        * [Get Permission State](#get-permission-state)
+        * [Location Tracking](#location-tracking)
+        * [Android Strategies](#android-strategies)
+            * [AndroidBroadcastBasedRequestStrategy](#androidbroadcastbasedrequeststrategy)
+            * [AndroidPeriodicRequestStrategy](#androidperiodicrequeststrategy)
+        * [IOS Strategies](#ios-strategies)
+            * [SignificantLocationChangeStrategy](#significantlocationchangestrategy)
+            * [LocationChangeStrategy](#locationchangestrategy)
+        * [Stopping Location Tracking](#stopping-location-tracking)
+        * [Getting all unread Location Traces](#getting-all-unread-location-traces)
+        * [Number of Traces](#number-of-traces)
+        * [Keep informed about the State of the Plugin](#keep-informed-about-the-state-of-the-plugin)
+        * [Getting all Location Traces](#getting-all-location-traces)
+    * [FAQ](#faq)
+        * [I'm getting a SecurityException on Android when a new location is arriving](#im-getting-a-securityexception-on-android-when-a-new-location-is-arriving)
+        * [The whole App is crashing on iOS when starting Location Tracking](#the-whole-app-is-crashing-on-ios-when-starting-location-tracking)
+        * [The App works on iOS, but nothing is happening](#the-app-works-on-ios-but-nothing-is-happening)
+
 ## Getting Started
 
 ### Get the Package:
