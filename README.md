@@ -1,8 +1,7 @@
 # background_location_updates
 
 Retrieve periodic location updates, even when the main App is not running. Useful for Navigation Apps to keep a rough idea of where the User is heading, and various other purposes. Please don't be evil though, and tell the User exactly how, when and why you wish to retrieve her location.
-
-The Plugin uses `Significant Location Change` on iOS, and a `WorkManager`-based Periodic Job, combined with a `OnBoot` Broadcast Receiver on Android.
+Before integrating this Plugin in your app, please read [this](https://www.dataprotection.ie/docs/Guidance-Note-for-Data-Controllers-on-Location-Data/1587.htm).
 
 *This Plugin is heavily WIP, shouldn't be used in Production yet, and the API is likely to change by the hour.*
 
@@ -104,8 +103,7 @@ The only way to change a `Partial` or `Denied` PermissionState is through the Ph
 
 ### Location Tracking
 
-
-After you've asked the User for appropriate permissions (read up on GDPR!), start the Location Tracking.
+After you've asked the User for appropriate permissions, start the Location Tracking.
 
 ```dart
 await BackgroundLocationUpdates.startTrackingLocation(
