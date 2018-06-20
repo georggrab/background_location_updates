@@ -42,7 +42,9 @@
                <action android:name="io.gjg.backgroundlocationupdates.ACTION_PROCESS_LOCATION_UPDATE" />
            </intent-filter>
         </receiver>
-        <receiver android:name="io.gjg.backgroundlocationupdates.locationstrategies.periodic.PeriodicBootBroadcastReceiver">
+        <receiver
+            android:exported="true"
+            android:name="io.gjg.backgroundlocationupdates.locationstrategies.broadcast.BroadcastBasedBootBroadcastReceiver">
             <intent-filter>
                 <action android:name="android.intent.action.BOOT_COMPLETED" />
             </intent-filter>

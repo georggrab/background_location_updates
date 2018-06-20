@@ -41,16 +41,21 @@ class LocationTrace {
   int readCount;
   double accuracy;
 
-  LocationTrace({this.id, this.latitude, this.longitude, this.altitude, this.readCount, this.accuracy});
+  LocationTrace(
+      {this.id,
+      this.latitude,
+      this.longitude,
+      this.altitude,
+      this.readCount,
+      this.accuracy});
 
   static LocationTrace fromMap(Map<String, double> map) {
     final trace = LocationTrace(
-      id: map["id"].toInt(),
-      latitude: map["latitude"],
-      longitude: map["longitude"],
-      readCount: map["readCount"].toInt(),
-      accuracy: map["accuracy"]
-    );
+        id: map["id"].toInt(),
+        latitude: map["latitude"],
+        longitude: map["longitude"],
+        readCount: map["readCount"].toInt(),
+        accuracy: map["accuracy"]);
     if (map["altitude"] != 0.0) {
       trace.altitude = map["altitude"];
     }
@@ -58,81 +63,86 @@ class LocationTrace {
   }
 
   @override
-    String toString() {
-      return "LocationTrace(id=$id, lat=$latitude, lng=$longitude, acc=$accuracy, alt=$altitude, readCount=$readCount)";
-    }
+  String toString() {
+    return "LocationTrace(id=$id, lat=$latitude, lng=$longitude, acc=$accuracy, alt=$altitude, readCount=$readCount)";
+  }
 }
 
 abstract class Strategy {
   Future<bool> invoke(MethodChannel channel);
   Future<void> revert(MethodChannel channel);
 }
+
 abstract class AndroidStrategy extends Strategy {}
 
 class AndroidPeriodicRequestStrategy extends AndroidStrategy {
   Duration requestInterval;
-  AndroidPeriodicRequestStrategy({ this.requestInterval });
+  AndroidPeriodicRequestStrategy({this.requestInterval});
 
   @override
-    Future<bool> invoke(MethodChannel channel) async {
-      final bool success = await channel.invokeMethod('trackStart/android-strategy:periodic', [
-        this.requestInterval.inMilliseconds
-      ]);
-      return success;
-    }
+  Future<bool> invoke(MethodChannel channel) async {
+    final bool success = await channel.invokeMethod(
+        'trackStart/android-strategy:periodic',
+        [this.requestInterval.inMilliseconds]);
+    return success;
+  }
 
-    @override
-      Future<void> revert(MethodChannel channel) async {
-        print('asd');
-        await channel.invokeMethod('trackStop/android-strategy:periodic', []);
-      }
+  @override
+  Future<void> revert(MethodChannel channel) async {
+    print('asd');
+    await channel.invokeMethod('trackStop/android-strategy:periodic', []);
+  }
 }
 
 // TODO rest of locationRequest things here
 class AndroidBroadcastBasedRequestStrategy extends AndroidStrategy {
   Duration requestInterval;
-  AndroidBroadcastBasedRequestStrategy({ this.requestInterval });
+  AndroidBroadcastBasedRequestStrategy({this.requestInterval});
 
   @override
-    Future<bool> invoke(MethodChannel channel) async {
-      final bool success = await channel.invokeMethod('trackStart/android-strategy:broadcast', [
-        this.requestInterval.inMilliseconds
-      ]);
-      return success;
-    }
+  Future<bool> invoke(MethodChannel channel) async {
+    final bool success = await channel.invokeMethod(
+        'trackStart/android-strategy:broadcast',
+        [this.requestInterval.inMilliseconds]);
+    return success;
+  }
 
-    @override
-      Future<void> revert(MethodChannel channel) async {
-        await channel.invokeMethod('trackStop/android-strategy:broadcast', []);
-      }
+  @override
+  Future<void> revert(MethodChannel channel) async {
+    await channel.invokeMethod('trackStop/android-strategy:broadcast', []);
+  }
 }
 
-
 abstract class IOSStrategy extends Strategy {}
+
 class IOSSignificantLocationChangeStrategy extends IOSStrategy {
   IOSSignificantLocationChangeStrategy();
   @override
-    Future<bool> invoke(MethodChannel channel) async {
-      final bool success = await channel.invokeMethod('startTrackingLocation', []);
-      return success;
-    }
-    @override
-      Future<void> revert(MethodChannel channel) async {
-        await channel.invokeMethod('stopTrackingLocation', []);
-      }
+  Future<bool> invoke(MethodChannel channel) async {
+    final bool success =
+        await channel.invokeMethod('trackStart/ios-strategy:significant-location-change', []);
+    return success;
+  }
+
+  @override
+  Future<void> revert(MethodChannel channel) async {
+    await channel.invokeMethod('trackStop/ios-strategy:significant-location-change', []);
+  }
 }
 
 // TODO implement
 class IOSLocationChangeStrategy extends IOSStrategy {
   @override
-    Future<bool> invoke(MethodChannel channel) async {
-      final bool success = await channel.invokeMethod('startTrackingLocation', []);
-      return success;
-    }
-    @override
-      Future<void> revert(MethodChannel channel) async {
-        await channel.invokeMethod('stopTrackingLocation', []);
-      }
+  Future<bool> invoke(MethodChannel channel) async {
+    final bool success =
+        await channel.invokeMethod('trackStart/ios-strategy:location-change', []);
+    return success;
+  }
+
+  @override
+  Future<void> revert(MethodChannel channel) async {
+    await channel.invokeMethod('trackStop/ios-strategy:location-change', []);
+  }
 }
 
 class BackgroundLocationUpdates {
@@ -147,11 +157,12 @@ class BackgroundLocationUpdates {
   static const EventChannel _permissionStateChangeEvents = const EventChannel(
       'plugins.gjg.io/background_location_updates/permission_state');
 
-  static Future<void> startTrackingLocation({AndroidStrategy androidStrategy, IOSStrategy iOSStrategy}) async {
+  static Future<void> startTrackingLocation(
+      {AndroidStrategy androidStrategy, IOSStrategy iOSStrategy}) async {
     if (Platform.isAndroid) {
       BackgroundLocationUpdates.lastStrategy = androidStrategy;
-      await androidStrategy.invoke(_channel);  
-      } else if (Platform.isIOS) {
+      await androidStrategy.invoke(_channel);
+    } else if (Platform.isIOS) {
       BackgroundLocationUpdates.lastStrategy = iOSStrategy;
       await iOSStrategy.invoke(_channel);
     }

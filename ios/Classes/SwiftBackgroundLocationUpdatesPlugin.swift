@@ -35,16 +35,18 @@ public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLo
     
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
-        case "startTrackingLocation":
+        case "trackStart/ios-strategy:significant-location-change":
             let arguments = call.arguments as! Array<Any>
             let requestInterval = arguments[0] as! Int
             TrackingActivator.persistRequestInterval(requestInterval: requestInterval)
             trackingStateChangeHandler?.propagate(trackingStateChange: true)
             initManager()
             self.manager?.startUpdatingLocation()
-        case "stopTrackingLocation":
+        case "trackStop/ios-strategy:significant-location-change":
             trackingStateChangeHandler?.propagate(trackingStateChange: false)
             TrackingActivator.clearRequestInterval()
+        case "trackStart/ios-strategy:location-change":
+        case "trackStop/ios-strategy:location-change":
         case "requestPermission":
             NSLog("request")
             if (self.manager == nil) {

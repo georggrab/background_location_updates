@@ -36,9 +36,11 @@ class _MyAppState extends State<MyApp> {
       });
     });
 
-    BackgroundLocationUpdates.getPermissionState().listen((PermissionState state) {
+    BackgroundLocationUpdates
+        .getPermissionState()
+        .listen((PermissionState state) {
       setState(() {
-        _permissionState = state.toString();         
+        _permissionState = state.toString();
       });
     });
 
@@ -72,16 +74,18 @@ class _MyAppState extends State<MyApp> {
                   new RaisedButton(
                     onPressed: () async {
                       await BackgroundLocationUpdates.startTrackingLocation(
-                        iOSStrategy: IOSSignificantLocationChangeStrategy(),
-                        androidStrategy: AndroidBroadcastBasedRequestStrategy(requestInterval:  const Duration(seconds: 30)));
+                          iOSStrategy: IOSSignificantLocationChangeStrategy(),
+                          androidStrategy: AndroidBroadcastBasedRequestStrategy(
+                              requestInterval: const Duration(seconds: 30)));
                     },
                     child: const Text('a:broadcast;i:slc(30s)'),
                   ),
                   new RaisedButton(
                     onPressed: () async {
                       await BackgroundLocationUpdates.startTrackingLocation(
-                        iOSStrategy: IOSLocationChangeStrategy(),
-                        androidStrategy: AndroidPeriodicRequestStrategy(requestInterval:  const Duration(seconds: 10)));
+                          iOSStrategy: IOSLocationChangeStrategy(),
+                          androidStrategy: AndroidPeriodicRequestStrategy(
+                              requestInterval: const Duration(seconds: 10)));
                     },
                     child: const Text('a:periodic;i:slc(10s)'),
                   ),
@@ -111,16 +115,14 @@ class _MyAppState extends State<MyApp> {
                   new RaisedButton(
                     child: new Text("Mark all displayed unread as read"),
                     onPressed: () async {
-                      List<int> ids =
-                          this.traces.map((LocationTrace trace) {
+                      List<int> ids = this.traces.map((LocationTrace trace) {
                         return trace.id;
                       }).toList();
                       await BackgroundLocationUpdates.markAsRead(ids);
                       this.updateUnread();
                     },
-                  ), new Text(
-                    'Permission State: $_permissionState'
                   ),
+                  new Text('Permission State: $_permissionState'),
                 ],
               ),
               Flexible(
