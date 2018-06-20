@@ -147,16 +147,14 @@ class BackgroundLocationUpdates {
   static const EventChannel _permissionStateChangeEvents = const EventChannel(
       'plugins.gjg.io/background_location_updates/permission_state');
 
-  static Future<bool> startTrackingLocation({AndroidStrategy androidStrategy, IOSStrategy iOSStrategy}) async {
-    bool success;
+  static Future<void> startTrackingLocation({AndroidStrategy androidStrategy, IOSStrategy iOSStrategy}) async {
     if (Platform.isAndroid) {
       BackgroundLocationUpdates.lastStrategy = androidStrategy;
-      success = await androidStrategy.invoke(_channel);  
+      await androidStrategy.invoke(_channel);  
       } else if (Platform.isIOS) {
       BackgroundLocationUpdates.lastStrategy = iOSStrategy;
-      success = await iOSStrategy.invoke(_channel);
+      await iOSStrategy.invoke(_channel);
     }
-    return success;
   }
 
   static Stream<bool> streamLocationActive() {

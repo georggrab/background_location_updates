@@ -19,35 +19,25 @@ dependencies:
 
 ### Android Permissions
 
-In your `src/main/app/AndroidManifest.xml`, we'll need to register a couple permissions and a Broadcast Receiver.
+In your `src/main/app/AndroidManifest.xml`, we'll need to register the appropriate permission. **Based on the Android Location Strategy you intend on using, you'll need to put some additional things in your Manifest. See below.**
 
 ```xml
 <manifest ...">
     ....
     <!-- Alternatively: ACCESS_COARSE_LOCATION -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
-    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
-
-    <application ...>
-        .....
-        <receiver android:name="io.gjg.backgroundlocationupdates.service.BootBroadcastReceiver">
-            <intent-filter>
-                <action android:name="android.intent.action.BOOT_COMPLETED" />
-            </intent-filter>
-        </receiver>
-    </application>
 </manifest>
 ```
 
-## iOS Specifics
+### iOS Specifics
 
-### Podfile & Swift Language Version
+#### Podfile & Swift Language Version
 
 **You don't have to do this if you created your project with `flutter create ... -i swift`.**
 This Plugin will only work with the Swift Podfile (get it from [here](https://github.com/flutter/flutter/blob/master/packages/flutter_tools/templates/cocoapods/Podfile-swift), replace `ios/Podfile`, delete `ios/Podfile.lock`). Afterwards you'll need to set the Swift Language Version to the latest one in the XCode Project if you haven't already. See [here](https://stackoverflow.com/questions/47743271/the-swift-language-version-swift-version-build-setting-error-with-project-in) for instructions.
 
 
-### iOS Permissions
+#### iOS Permissions
 We'll first have to tell iOS that the app wishes to be started on location updates. Then, we have to justify to the User why we're intending to use their location. Both of these things are taken care of by setting the appropriate keys in `ios/Runner/Info.plist`:
 
 ```xml
@@ -71,6 +61,7 @@ need basic Location Services (while the App is running). -->
 <string>Selling it on the black market</string>
 ```
 
+## Documentation
 ### Importing the Package
 
 ```dart
@@ -111,18 +102,105 @@ PermissionState.DENIED
 
 The only way to change a `Partial` or `Denied` PermissionState is through the Phone Settings. You should however respect the decision the User has made and implement reacting to these Permission States appropriately.
 
-### Starting Location Tracking
+### Location Tracking
+
 
 After you've asked the User for appropriate permissions (read up on GDPR!), start the Location Tracking.
 
 ```dart
-await BackgroundLocationUpdates
-   .startTrackingLocation(
-        BackgroundLocationUpdates.LOCATION_SINK_SQLITE,
-        requestInterval: const Duration(seconds: 10));
+await BackgroundLocationUpdates.startTrackingLocation(
+       iOSStrategy: IOSSignificantLocationChangeStrategy(),
+       androidStrategy: AndroidBroadcastBasedRequestStrategy(requestInterval:  const Duration(seconds: 30)));
+```
+For each Platform, we have a multitude of possibilities available to actually receive the Location. Some of them are available through this Plugin. You specify what strategy you want to use by setting the `iOSStrategy` and `androidStrategy` parameters.
+
+#### Android Strategies
+
+##### AndroidBroadcastBasedRequestStrategy
+
+```dart
+AndroidBroadcastBasedRequestStrategy(
+    requestInterval: const Duration(seconds: 30)));
 ```
 
-The first argument to `startTrackingLocation` specifies how you which the Location to be persisted. Currently, only `SQLite` is supported. The second argument is a requestInterval, which specifies how often to ask the Operating System for the User's location. This will only be respected on Android, and even there, it will only have the desired effect on Versions below Android O. On Android O and below, this argument is ignored, and you will only receive new locations on the discretion of the Operating System, which is about three times an hour for both platforms.
+The `AndroidBroadcastBasedRequestStrategy` provides the Location at the discretion of the Android OS. How often the Location is actually received depends on several factors, such as Battery Life, Android OS Version (starting from Android Oreo, you will only receive the Background Location about 3x an hour regardless of what you put in `requestInterval`, see [here](https://developer.android.com/about/versions/oreo/background-location-limits) for more info), and whether the App is in the Foreground or Background. If the App is in the Foreground, the `requestInterval` is usually respected by all Android Versions.
+This strategy uses the `FusedLocationProviderClient.requestLocationUpdates` ([see here](https://developers.google.com/android/reference/com/google/android/gms/location/FusedLocationProviderClient.html#requestLocationUpdates)) infrastructure to request the Location. The Location will received through the following Broadcast, which you must register in your Manifest:
+
+```xml
+<manifest ...>
+    ...
+    <application ...>
+        ...
+        <receiver android:name="io.gjg.backgroundlocationupdates.locationstrategies.broadcast.LocationUpdatesBroadcastReceiver">
+           <intent-filter>
+               <action android:name="io.gjg.backgroundlocationupdates.ACTION_PROCESS_LOCATION_UPDATE" />
+           </intent-filter>
+        </receiver>
+    </application>
+</manifest>
+```
+
+If you want to make the location tracking survive after Reboot, put this in your manifest additionally:
+
+```xml
+<manifest ...>
+    ...
+    <!-- Permission to receive the BOOT_COMPLETED Broadcast -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <application ...>
+        ...
+        <!-- A BroadcastReceiver for kicking off the Tracking again after reboot -->
+        <receiver android:name="io.gjg.backgroundlocationupdates.locationstrategies.broadcast.BroadcastBasedBootBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
+```
+
+##### AndroidPeriodicRequestStrategy
+
+```dart
+AndroidPeriodicRequestStrategy(
+    requestInterval: const Duration(minutes: 30)));
+```
+
+This strategy will work based on a Periodic Background Task, that will be executed every `requestInterval` seconds. This means the App is requesting the Location at its own discretion. You will get a Location Update every `requestInterval` seconds, even on Android Oreo and above. However, on Android Oreo and above, the Location Update will only change in value about 3x an hour (see [here](https://developer.android.com/about/versions/oreo/background-location-limits) for more information on this). On lower Android Versions, you will probably receive an updated Location much more often through this method. Keep in mind however that requesting the Location is harmful on Battery Life, so please be careful with this strategy, unless you want your users to uninstall your App very quickly.
+
+If you want to make the Strategy survive after Reboot, put this in your manifest additionally:
+
+```xml
+<manifest ...>
+    ...
+    <!-- Permission to receive the BOOT_COMPLETED Broadcast -->
+    <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED" />
+    <application ...>
+        ...
+        <!-- A BroadcastReceiver for kicking off the Tracking again after reboot -->
+        <!-- Hint, this is a different receiver than the one above!! -->
+        <receiver android:name="io.gjg.backgroundlocationupdates.locationstrategies.periodic.PeriodicBootBroadcastReceiver">
+            <intent-filter>
+                <action android:name="android.intent.action.BOOT_COMPLETED" />
+            </intent-filter>
+        </receiver>
+    </application>
+</manifest>
+```
+
+#### IOS Strategies
+
+##### SignificantLocationChangeStrategy
+```dart
+IOSSignificantLocationChangeStrategy();
+```
+
+You will receive new Locations once it changes by a significant amount, which means about [500 meters or more for Apple](https://developer.apple.com/documentation/corelocation/getting_the_user_s_location/using_the_significant_change_location_service)
+There is no way to make this persistent across Device Reboots.
+
+##### LocationChangeStrategy
+tbd
+
 
 ### Stopping Location Tracking
 

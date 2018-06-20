@@ -14,7 +14,6 @@ class _MyAppState extends State<MyApp> {
   List<LocationTrace> traces = [];
   int tracesCount;
   String _permissionState;
-  Color startTrackingButtonColor = Colors.grey;
   Color isActiveColor = Colors.grey;
 
   @override
@@ -71,20 +70,20 @@ class _MyAppState extends State<MyApp> {
               Wrap(
                 children: <Widget>[
                   new RaisedButton(
-                    color: this.startTrackingButtonColor,
                     onPressed: () async {
-                      bool loc = await BackgroundLocationUpdates.startTrackingLocation(
+                      await BackgroundLocationUpdates.startTrackingLocation(
                         iOSStrategy: IOSSignificantLocationChangeStrategy(),
                         androidStrategy: AndroidBroadcastBasedRequestStrategy(requestInterval:  const Duration(seconds: 30)));
-                      setState(() {
-                        if (loc) {
-                          this.startTrackingButtonColor = Colors.green;
-                        } else {
-                          this.startTrackingButtonColor = Colors.red;
-                        }
-                      });
                     },
-                    child: const Text('startTrackingLocation(10s)'),
+                    child: const Text('a:broadcast;i:slc(30s)'),
+                  ),
+                  new RaisedButton(
+                    onPressed: () async {
+                      await BackgroundLocationUpdates.startTrackingLocation(
+                        iOSStrategy: IOSLocationChangeStrategy(),
+                        androidStrategy: AndroidPeriodicRequestStrategy(requestInterval:  const Duration(seconds: 10)));
+                    },
+                    child: const Text('a:periodic;i:slc(10s)'),
                   ),
                   new RaisedButton(
                     onPressed: () {
