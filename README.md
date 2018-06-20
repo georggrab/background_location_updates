@@ -50,7 +50,7 @@ dependencies:
 In your `src/main/app/AndroidManifest.xml`, we'll need to register the appropriate permission. **Based on the Android Location Strategy you intend on using, you'll need to put some additional things in your Manifest. See below.**
 
 ```xml
-<manifest ...">
+<manifest ...>
     ....
     <!-- Alternatively: ACCESS_COARSE_LOCATION -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
@@ -219,15 +219,20 @@ If you want to make the Strategy survive after Reboot, put this in your manifest
 
 ##### SignificantLocationChangeStrategy
 ```dart
-IOSSignificantLocationChangeStrategy();
+IOSSignificantLocationChangeStrategy(
+    desiredAccuracy: IOSStrategy.ACCURACY_HUNDRED_METERS
+);
 ```
-
-You will receive new Locations once it changes by a significant amount, which means about [500 meters or more for Apple](https://developer.apple.com/documentation/corelocation/getting_the_user_s_location/using_the_significant_change_location_service)
+You will receive new Locations once it changes by a significant amount, which means about [500 meters or more for Apple](https://developer.apple.com/documentation/corelocation/getting_the_user_s_location/using_the_significant_change_location_service). If the App is in foreground, you can further explain the desired accuracy through `desiredAccuracy`.
 There is no way to make this persistent across Device Reboots.
 
 ##### LocationChangeStrategy
-tbd
-
+```dart
+IOSLocationChangeStrategy(
+    desiredAccuracy: IOSStrategy.ACCURACY_HUNDRED_METERS
+);
+```
+You will receive new Locations based on the `desiredAccuracy` that you specified.
 
 ### Stopping Location Tracking
 

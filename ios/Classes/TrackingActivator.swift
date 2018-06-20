@@ -9,21 +9,35 @@ import Foundation
 import UIKit
 
 class TrackingActivator {
-    public static let KEY_REQUEST_INTERVAL: String = "requestInterval"
-    static func persistRequestInterval(requestInterval: Int) {
-        let defaults = UserDefaults.standard
-        defaults.set(requestInterval, forKey: TrackingActivator.KEY_REQUEST_INTERVAL)
+    public static let KEY_DESIRED_ACCURACY: String = "io.gjg.backgroundlocationupdates/desired_accuracy"
+    public static let USERDEFAULTS_REALM: String = "io.gjg.backgroundlocationupdates"
+    
+    static func getDefaults() -> UserDefaults {
+        var defaults = UserDefaults(suiteName: USERDEFAULTS_REALM)
+        if defaults == nil {
+            defaults = UserDefaults.standard
+        }
+        return defaults!
     }
     
-    static func clearRequestInterval() {
-        let defaults = UserDefaults.standard
-        defaults.removeObject(forKey: TrackingActivator.KEY_REQUEST_INTERVAL)
+    static func persistRequestedAccuracy(requestInterval: Double) {
+        getDefaults().set(requestInterval, forKey: TrackingActivator.KEY_DESIRED_ACCURACY)
+    }
+    
+    static func clearRequestedAccuracy() {
+        getDefaults().removeObject(forKey: TrackingActivator.KEY_DESIRED_ACCURACY)
+    }
+    
+    static func getRequestedAccuracy() -> Double? {
+        let accuracy = getDefaults().double(forKey: TrackingActivator.KEY_DESIRED_ACCURACY)
+        if (accuracy == 0) {
+            return nil
+        }
+        return accuracy
     }
     
     static func isTrackingActive() -> Bool {
-        let defaults = UserDefaults.standard
-        let data = defaults.integer(forKey: TrackingActivator.KEY_REQUEST_INTERVAL)
-        return data != 0
+        return getRequestedAccuracy() != nil
     }
     
 }

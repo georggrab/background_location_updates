@@ -2,6 +2,25 @@ import Flutter
 import UIKit
 import CoreLocation
 
+func resolveAccuracy(incoming: Int) -> CLLocationAccuracy? {
+    switch incoming {
+    case 1: return kCLLocationAccuracyBest
+    case 2: return kCLLocationAccuracyKilometer
+    case 3: return kCLLocationAccuracyHundredMeters
+    case 4: return kCLLocationAccuracyThreeKilometers
+    case 5: return kCLLocationAccuracyNearestTenMeters
+    default: return nil
+    }
+}
+
+func extractAccuracy(_ call: FlutterMethodCall) -> CLLocationAccuracy? {
+    let args = call.arguments as? [Any]
+    guard let accuracy = args?[0] as? Int else {
+        return nil
+    }
+    return resolveAccuracy(incoming: accuracy)
+}
+
 public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLocationManagerDelegate {
     internal var trackingStateChangeHandler: TrackingStateChangeHandler?
     internal var permissionStateHandler: PermissionStateHandler?
@@ -33,20 +52,40 @@ public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLo
         registrar.addMethodCallDelegate(instance, channel: channel)
     }
     
+    private func handleTrackingStart(accuracy: CLLocationAccuracy) {
+        TrackingActivator.persistRequestedAccuracy(requestInterval: accuracy)
+        trackingStateChangeHandler?.propagate(trackingStateChange: true)
+        initManager(desiredAccuracy: accuracy)
+    }
+    
+    private func handleTrackingStop() {
+        trackingStateChangeHandler?.propagate(trackingStateChange: false)
+        TrackingActivator.clearRequestedAccuracy()
+    }
+    
     public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
         switch call.method {
         case "trackStart/ios-strategy:significant-location-change":
-            let arguments = call.arguments as! Array<Any>
-            let requestInterval = arguments[0] as! Int
-            TrackingActivator.persistRequestInterval(requestInterval: requestInterval)
-            trackingStateChangeHandler?.propagate(trackingStateChange: true)
-            initManager()
-            self.manager?.startUpdatingLocation()
+            guard let desiredAccuracy = extractAccuracy(call) else {
+                NSLog("startStart/slc received invalid arguments. Aborting")
+                return
+            }
+            handleTrackingStart(accuracy: desiredAccuracy)
+            self.manager?.startMonitoringSignificantLocationChanges()
         case "trackStop/ios-strategy:significant-location-change":
-            trackingStateChangeHandler?.propagate(trackingStateChange: false)
-            TrackingActivator.clearRequestInterval()
+            handleTrackingStop()
+            
+            self.manager?.stopMonitoringSignificantLocationChanges()
         case "trackStart/ios-strategy:location-change":
+            guard let desiredAccuracy = extractAccuracy(call) else {
+                NSLog("startStart/slc received invalid arguments. Aborting")
+                return
+            }
+            handleTrackingStart(accuracy: desiredAccuracy)
+            self.manager?.startUpdatingLocation()
         case "trackStop/ios-strategy:location-change":
+            handleTrackingStop()
+            self.manager?.stopUpdatingLocation()
         case "requestPermission":
             NSLog("request")
             if (self.manager == nil) {
@@ -76,7 +115,12 @@ public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLo
     
     public func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [AnyHashable : Any] = [:]) -> Bool {
         if (launchOptions[UIApplicationLaunchOptionsKey.location] != nil) {
-           initManager()
+           let accuracy = TrackingActivator.getRequestedAccuracy()
+            if (accuracy == nil) {
+                return false
+            }
+            initManager(desiredAccuracy: accuracy!)
+            manager?.startMonitoringSignificantLocationChanges()
            return true
         } else {
            return false
@@ -97,7 +141,7 @@ public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLo
         self.permissionStateHandler?.propagate(state: PermissionStateHandler.getPermissionEnum(from: status))
     }
     
-    private func initManager() {
+    private func initManager(desiredAccuracy accuracy: CLLocationAccuracy) {
         if (self.manager == nil) {
             self.manager = CLLocationManager()
             self.manager?.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
@@ -107,7 +151,7 @@ public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLo
                     self.manager?.allowsBackgroundLocationUpdates = true
                 }
             }
-            self.manager?.startMonitoringSignificantLocationChanges()
+            
         }
     }
     

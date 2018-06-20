@@ -74,7 +74,9 @@ class _MyAppState extends State<MyApp> {
                   new RaisedButton(
                     onPressed: () async {
                       await BackgroundLocationUpdates.startTrackingLocation(
-                          iOSStrategy: IOSSignificantLocationChangeStrategy(),
+                          iOSStrategy: IOSSignificantLocationChangeStrategy(
+                            desiredAccuracy: IOSStrategy.ACCURACY_BEST
+                          ),
                           androidStrategy: AndroidBroadcastBasedRequestStrategy(
                               requestInterval: const Duration(seconds: 30)));
                     },
@@ -83,11 +85,13 @@ class _MyAppState extends State<MyApp> {
                   new RaisedButton(
                     onPressed: () async {
                       await BackgroundLocationUpdates.startTrackingLocation(
-                          iOSStrategy: IOSLocationChangeStrategy(),
+                          iOSStrategy: IOSLocationChangeStrategy(
+                            desiredAccuracy: IOSStrategy.ACCURACY_BEST
+                          ),
                           androidStrategy: AndroidPeriodicRequestStrategy(
                               requestInterval: const Duration(seconds: 10)));
                     },
-                    child: const Text('a:periodic;i:slc(10s)'),
+                    child: const Text('a:periodic;i:lc(10s)'),
                   ),
                   new RaisedButton(
                     onPressed: () {
