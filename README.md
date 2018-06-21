@@ -47,7 +47,7 @@ Add the following to your `pubspec.yml`:
 
 ```yaml
 dependencies:
-  background_location_updates: ^0.3.0
+  background_location_updates: ^0.3.1
 ```
 
 ### Android Permissions
