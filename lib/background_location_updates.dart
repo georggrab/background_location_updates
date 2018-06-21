@@ -245,7 +245,7 @@ class BackgroundLocationUpdates {
   }
 
   static Future<int> getLocationTracesCount() async {
-    final int count = await _channel.invokeMethod('getUnreadLocationCount');
+    final int count = await _channel.invokeMethod('getLocationTracesCount');
     return count;
   }
 

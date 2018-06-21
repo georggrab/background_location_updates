@@ -103,7 +103,7 @@ import 'package:background_location_updates/background_location_updates.dart';
 
 ### Requesting Permissions
 ```dart
-await BackgroundLocationUpdates.requestPermission()
+PermissionState granted = await BackgroundLocationUpdates.requestPermission()
 ```
 On both Android and iOS, this will show a Permission Request Alertbox to the User. After the User has consented, further calls to this method will have no effect, and the other API Methods described below will work as intended.
 
