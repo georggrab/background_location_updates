@@ -17,6 +17,9 @@
 import 'dart:async';
 import 'dart:io' show Platform;
 import 'package:flutter/services.dart';
+import 'package:json_annotation/json_annotation.dart';
+
+part 'background_location_updates.g.dart';
 
 enum PermissionState { GRANTED, PARTIAL, DENIED }
 
@@ -33,7 +36,8 @@ PermissionState toPermissionState(int nativeCode) {
   }
 }
 
-class LocationTrace {
+@JsonSerializable()
+class LocationTrace extends Object with _$LocationTraceSerializerMixin {
   int id;
   double latitude;
   double longitude;
@@ -66,6 +70,8 @@ class LocationTrace {
   String toString() {
     return "LocationTrace(id=$id, lat=$latitude, lng=$longitude, acc=$accuracy, alt=$altitude, readCount=$readCount)";
   }
+
+  factory LocationTrace.fromJson(Map<String, dynamic> json) => _$LocationTraceFromJson(json);
 }
 
 abstract class Strategy {

@@ -5,8 +5,15 @@ author: Georg Grab <g.j.grab.dev@gmail.com>
 homepage: https://github.com/talkdirty/background_location_updates
 
 dependencies:
+  json_annotation: ^0.2.3
   flutter:
     sdk: flutter
+
+
+dev_dependencies:
+  # Your other dev_dependencies here
+  build_runner: ^0.8.0
+  json_serializable: ^0.5.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://www.dartlang.org/tools/pub/pubspec
