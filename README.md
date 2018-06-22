@@ -253,7 +253,6 @@ List<LocationTrace> traces = await BackgroundLocationUpdates.getUnreadLocationTr
 ```
 
 This will retrieve all location traces that have not been previously marked as read. This means, you can call this method when your App is started in order to receive all Location Updates that happened in the time since your App was last opened. A List of Objects of type `LocationTrace` will be returned.
-```
 
 ### Marking Location Traces as read
 After you've processed the Unread Location Traces, you can mark them as read, so you won't receive them again by the `getUnreadLocationTraces` call in the future.
