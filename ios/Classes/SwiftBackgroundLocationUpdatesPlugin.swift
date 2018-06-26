@@ -146,14 +146,13 @@ public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLo
     private func initManager(desiredAccuracy accuracy: CLLocationAccuracy) {
         if (self.manager == nil) {
             self.manager = CLLocationManager()
-            self.manager?.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
-            self.manager?.delegate = self
-            if #available(iOS 9.0, *) {
-                if (self.manager?.responds(to: #selector(getter: CLLocationManager.allowsBackgroundLocationUpdates)))! {
-                    self.manager?.allowsBackgroundLocationUpdates = true
-                }
+        }
+        self.manager?.desiredAccuracy = kCLLocationAccuracyNearestTenMeters
+        self.manager?.delegate = self
+        if #available(iOS 9.0, *) {
+            if (self.manager?.responds(to: #selector(getter: CLLocationManager.allowsBackgroundLocationUpdates)))! {
+                self.manager?.allowsBackgroundLocationUpdates = true
             }
-            
         }
     }
     

@@ -116,7 +116,9 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
 
 
   private void locationTrackingStopped() {
-    isTrackingActiveEventSink.success(false);
+    if (isTrackingActiveEventSink != null) {
+      isTrackingActiveEventSink.success(false);
+    }
     mContext.getSharedPreferences(BackgroundLocationUpdatesPlugin.SHARED_PREFS, Context.MODE_PRIVATE)
             .edit()
             .remove(KEY_PERSISTED_REQUEST_INTERVAL)
@@ -124,7 +126,9 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
   }
 
   private void locationTrackingStarted(int requestInterval) {
-    isTrackingActiveEventSink.success(true);
+    if (isTrackingActiveEventSink != null) {
+      isTrackingActiveEventSink.success(true);
+    }
     mContext.getSharedPreferences(BackgroundLocationUpdatesPlugin.SHARED_PREFS, Context.MODE_PRIVATE)
             .edit()
             .putInt(BackgroundLocationUpdatesPlugin.KEY_PERSISTED_REQUEST_INTERVAL, requestInterval)
