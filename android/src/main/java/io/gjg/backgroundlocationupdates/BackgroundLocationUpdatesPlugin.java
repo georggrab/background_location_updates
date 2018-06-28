@@ -59,7 +59,8 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
     } else if (call.method.equals("trackStart/android-strategy:periodic")) {
       startTrackingWithPeriodicStrategy(call, result);
     } else if (call.method.equals("trackStop/android-strategy:periodic")) {
-      stopTrackingWithPeriodicStrategy(result);
+      stopTrackingWithPeriodicStrategy();
+      result.success(null);
     } else if (call.method.equals("trackStart/android-strategy:broadcast")) {
       startTrackingWithBroadcastStrategy(call);
     } else if (call.method.equals("trackStop/android-strategy:broadcast")) {
@@ -78,9 +79,17 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
       requestPermission(result);
     } else if (call.method.equals("getSqliteDatabasePath")) {
       getSqliteDatabasePath(result);
+    } else if ( call.method.equals("revertActiveStrategy")) {
+      revertActiveUnknownStrategy();
+      result.success(true);
     } else {
       result.notImplemented();
     }
+  }
+
+  private void revertActiveUnknownStrategy() {
+    stopTrackingWithBroadcastStrategy();
+    stopTrackingWithPeriodicStrategy();
   }
 
   private void getSqliteDatabasePath(Result result) {
@@ -89,10 +98,10 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
   }
 
 
-  private void stopTrackingWithPeriodicStrategy(Result result) {
+  private void stopTrackingWithPeriodicStrategy() {
     PeriodicLocationTracker.stopLocationTracking();
     locationTrackingStopped();
-    result.success(null);
+
   }
 
   private void startTrackingWithPeriodicStrategy(MethodCall call, Result result) {

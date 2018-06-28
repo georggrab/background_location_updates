@@ -110,6 +110,10 @@ public class SwiftBackgroundLocationUpdatesPlugin: NSObject, FlutterPlugin, CLLo
             let _ = persistor?.markAsRead(args)
         case "getSqliteDatabasePath":
             result(Persistence.getSqliteDbFileName())
+        case "revertActiveStrategy":
+            handleTrackingStop()
+            self.manager?.stopMonitoringSignificantLocationChanges()
+            self.manager?.stopUpdatingLocation()
         default:
             result(FlutterMethodNotImplemented)
         }

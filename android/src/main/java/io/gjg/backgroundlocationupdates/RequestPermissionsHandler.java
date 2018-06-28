@@ -28,7 +28,9 @@ public class RequestPermissionsHandler implements PluginRegistry.RequestPermissi
         } else {
             this.result = PermissionResult.DENIED;
         }
-        this.sink.success(this.result.result);
+        if (this.sink != null) {
+            this.sink.success(this.result.result);
+        }
         Log.v(TAG, String.format("onRequestPermissionsResult: %s", this.result));
         return true;
     }
@@ -42,7 +44,7 @@ public class RequestPermissionsHandler implements PluginRegistry.RequestPermissi
             this.result = PermissionResult.DENIED;
         }
         Log.v(TAG, String.format("Permission Granted: %s", this.result));
-        this.sink.success(this.result.result);
+        eventSink.success(this.result.result);
     }
 
     @Override

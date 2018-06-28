@@ -13,6 +13,7 @@ LocationTrace _$LocationTraceFromJson(Map<String, dynamic> json) {
       longitude: (json['longitude'] as num)?.toDouble(),
       altitude: (json['altitude'] as num)?.toDouble(),
       readCount: json['readCount'] as int,
+      time: json['time'] as int,
       accuracy: (json['accuracy'] as num)?.toDouble());
 }
 
@@ -23,12 +24,14 @@ abstract class _$LocationTraceSerializerMixin {
   double get altitude;
   int get readCount;
   double get accuracy;
+  int get time;
   Map<String, dynamic> toJson() => <String, dynamic>{
         'id': id,
         'latitude': latitude,
         'longitude': longitude,
         'altitude': altitude,
         'readCount': readCount,
-        'accuracy': accuracy
+        'accuracy': accuracy,
+        'time': time
       };
 }

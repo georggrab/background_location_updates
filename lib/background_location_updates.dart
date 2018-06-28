@@ -16,7 +16,10 @@
 
 import 'dart:async';
 import 'dart:io' show Platform;
+import 'package:fixnum/fixnum.dart';
+
 import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'background_location_updates.g.dart';
@@ -44,6 +47,7 @@ class LocationTrace extends Object with _$LocationTraceSerializerMixin {
   double altitude;
   int readCount;
   double accuracy;
+  int time;
 
   LocationTrace(
       {this.id,
@@ -51,6 +55,7 @@ class LocationTrace extends Object with _$LocationTraceSerializerMixin {
       this.longitude,
       this.altitude,
       this.readCount,
+      this.time,
       this.accuracy});
 
   static LocationTrace fromMap(Map<String, double> map) {
@@ -58,7 +63,8 @@ class LocationTrace extends Object with _$LocationTraceSerializerMixin {
         id: map["id"].toInt(),
         latitude: map["latitude"],
         longitude: map["longitude"],
-        readCount: map["readCount"].toInt(),
+        time: map["time"].toInt(),
+        readCount:  map["readCount"].toInt(),
         accuracy: map["accuracy"]);
     if (map["altitude"] != 0.0) {
       trace.altitude = map["altitude"];
@@ -68,7 +74,7 @@ class LocationTrace extends Object with _$LocationTraceSerializerMixin {
 
   @override
   String toString() {
-    return "LocationTrace(id=$id, lat=$latitude, lng=$longitude, acc=$accuracy, alt=$altitude, readCount=$readCount)";
+    return "LocationTrace(id=$id, lat=$latitude, lng=$longitude, acc=$accuracy, alt=$altitude, readCount=$readCount, time=$time)";
   }
 
   factory LocationTrace.fromJson(Map<String, dynamic> json) => _$LocationTraceFromJson(json);
@@ -95,12 +101,10 @@ class AndroidPeriodicRequestStrategy extends AndroidStrategy {
 
   @override
   Future<void> revert(MethodChannel channel) async {
-    print('asd');
     await channel.invokeMethod('trackStop/android-strategy:periodic', []);
   }
 }
 
-// TODO rest of locationRequest things here
 class AndroidBroadcastBasedRequestStrategy extends AndroidStrategy {
   Duration requestInterval;
   AndroidBroadcastBasedRequestStrategy({this.requestInterval});
@@ -195,7 +199,8 @@ class BackgroundLocationUpdates {
 
   static Future<bool> stopTrackingLocation() async {
     if (BackgroundLocationUpdates.lastStrategy == null) {
-      return false;
+      await _channel.invokeMethod('revertActiveStrategy', []);
+      return true;
     } else {
       await BackgroundLocationUpdates.lastStrategy.revert(_channel);
       return true;
