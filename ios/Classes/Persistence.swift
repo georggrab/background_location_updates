@@ -12,6 +12,7 @@ class Persistence {
     static let speed = Expression<Double>("speed")
     static let accuracy = Expression<Double>("accuracy")
     static let readCount = Expression<Int>("read_count")
+    static let time = Expression<Double>("time")
     
     init(_ db: String) throws {
         do {
@@ -36,6 +37,7 @@ class Persistence {
             t.column(Persistence.speed)
             t.column(Persistence.accuracy)
             t.column(Persistence.readCount)
+            t.column(Persistence.time)
         })
         return result != nil
     }
@@ -48,6 +50,7 @@ class Persistence {
             Persistence.altitude <- loc.altitude.datatypeValue,
             Persistence.speed <- loc.speed.datatypeValue,
             Persistence.accuracy <- loc.speed.datatypeValue,
+            Persistence.time <- loc.timestamp.timeIntervalSince1970,
             Persistence.readCount <- 0
         ))
     }
@@ -79,6 +82,7 @@ class Persistence {
                     "speed": try row.get(Persistence.speed),
                     "accuracy": try row.get(Persistence.accuracy),
                     "readCount": Double(try row.get(Persistence.readCount)),
+                    "time": try row.get(Persistence.time),
                     "id": Double(try row.get(Persistence.id))
                 ])
             }
