@@ -50,7 +50,7 @@ class Persistence {
             Persistence.altitude <- loc.altitude.datatypeValue,
             Persistence.speed <- loc.speed.datatypeValue,
             Persistence.accuracy <- loc.speed.datatypeValue,
-            Persistence.time <- loc.timestamp.timeIntervalSince1970,
+            Persistence.time <- loc.timestamp.timeIntervalSince1970 * 1000,
             Persistence.readCount <- 0
         ))
     }

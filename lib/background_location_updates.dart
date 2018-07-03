@@ -69,6 +69,9 @@ class LocationTrace extends Object with _$LocationTraceSerializerMixin {
     if (map["altitude"] != 0.0) {
       trace.altitude = map["altitude"];
     }
+    print(map["time"]);
+    print(map["time"].toInt());
+    print(trace.time);
     return trace;
   }
 
