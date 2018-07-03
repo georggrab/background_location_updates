@@ -13,6 +13,9 @@ class Persistence {
     static let accuracy = Expression<Double>("accuracy")
     static let readCount = Expression<Int>("read_count")
     static let time = Expression<Double>("time")
+
+    static let course = Expression<Double>("course")
+    static let verticalAccuracy = Expression<Double>("verticalAccuracy")
     
     init(_ db: String) throws {
         do {
@@ -38,6 +41,8 @@ class Persistence {
             t.column(Persistence.accuracy)
             t.column(Persistence.readCount)
             t.column(Persistence.time)
+            t.column(Persistence.course)
+            t.column(Persistence.verticalAccuracy)
         })
         return result != nil
     }
@@ -49,9 +54,11 @@ class Persistence {
             Persistence.longitude <- loc.coordinate.longitude.datatypeValue,
             Persistence.altitude <- loc.altitude.datatypeValue,
             Persistence.speed <- loc.speed.datatypeValue,
-            Persistence.accuracy <- loc.speed.datatypeValue,
+            Persistence.accuracy <- loc.horizontalAccuracy,
+            Persistence.verticalAccuracy <- loc.verticalAccuracy,
             Persistence.time <- loc.timestamp.timeIntervalSince1970 * 1000,
-            Persistence.readCount <- 0
+            Persistence.readCount <- 0,
+            Persistence.course <- loc.course
         ))
     }
     
@@ -81,9 +88,11 @@ class Persistence {
                     "altitude": try row.get(Persistence.altitude),
                     "speed": try row.get(Persistence.speed),
                     "accuracy": try row.get(Persistence.accuracy),
+                    "verticalAccuracy": try row.get(Persistence.verticalAccuracy),
                     "readCount": Double(try row.get(Persistence.readCount)),
                     "time": try row.get(Persistence.time),
-                    "id": Double(try row.get(Persistence.id))
+                    "id": Double(try row.get(Persistence.id)),
+                    "course": try row.get(Persistence.course)
                 ])
             }
         } catch let error as NSError {

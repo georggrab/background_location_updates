@@ -3,6 +3,8 @@ package io.gjg.backgroundlocationupdates.persistence;
 import android.arch.persistence.room.ColumnInfo;
 import android.arch.persistence.room.Entity;
 import android.arch.persistence.room.PrimaryKey;
+import android.location.Location;
+import android.os.Build;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -10,100 +12,198 @@ import java.util.Map;
 @Entity(tableName = "location")
 public class LocationEntity {
     @PrimaryKey(autoGenerate = true)
-    private int id;
+    private Integer id;
 
     @ColumnInfo
-    private double accuracy;
+    private Double accuracy;
 
     @ColumnInfo
-    private double longitude;
+    private Double longitude;
 
     @ColumnInfo
-    private double latitude;
+    private Double latitude;
 
     @ColumnInfo
-    private double altitude;
+    private Double altitude;
 
     @ColumnInfo
-    private long time;
+    private Double speed;
+
+    @ColumnInfo
+    private Long time;
+
+    @ColumnInfo(name = "vertical_accuracy")
+    private Double verticalAccuracy;
+
+    @ColumnInfo
+    private final Double course;
+
+    @ColumnInfo(name = "course_accuracy")
+    private Double courseAccuracy;
+
+    @ColumnInfo(name = "speed_accuracy")
+    private Double speedAccuracy;
+
+    @ColumnInfo(name = "provider")
+    private String provider;
 
     @ColumnInfo(name = "read_count")
-    private int readCount;
+    private Integer readCount;
 
-    public LocationEntity(double accuracy, double longitude, double latitude, double altitude, long time, int readCount) {
+    public LocationEntity(Double accuracy, Double verticalAccuracy, Double longitude, Double latitude, Double altitude, Double speed, Long time, Integer readCount, Double course, Double courseAccuracy, Double speedAccuracy, String provider) {
         this.accuracy = accuracy;
         this.longitude = longitude;
         this.latitude = latitude;
         this.altitude = altitude;
         this.time = time;
         this.readCount = readCount;
+        this.courseAccuracy = courseAccuracy;
+        this.speedAccuracy = speedAccuracy;
+        this.provider = provider;
+        this.verticalAccuracy = verticalAccuracy;
+        this.speed = speed;
+        this.course = course;
     }
 
-    public Map<String, Double> toMap() {
-        final HashMap<String, Double> map = new HashMap<>();
-        map.put("id", Integer.valueOf(this.id).doubleValue());
+    public static LocationEntity fromAndroidLocation(Location location) {
+        Double vAcc = null, cAcc = null, speedAcc = null;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            vAcc = (double) location.getVerticalAccuracyMeters();
+            cAcc = (double) location.getBearingAccuracyDegrees();
+            speedAcc = (double) location.getSpeed();
+        }
+
+        return new LocationEntity(
+                (double) location.getAccuracy(),
+                vAcc,
+                location.getLongitude(),
+                location.getLatitude(),
+                location.getAltitude(),
+                (double )location.getSpeed(),
+                location.getTime(),
+                0,
+                (double) location.getBearing(),
+                cAcc,
+                speedAcc,
+                location.getProvider()
+        );
+    }
+
+    public Map<String, Object> toMap() {
+        final HashMap<String, Object> map = new HashMap<>();
+        map.put("id", this.id.doubleValue());
         map.put("accuracy", this.accuracy);
         map.put("longitude", this.longitude);
         map.put("latitude", this.latitude);
         map.put("altitude", this.altitude);
-        map.put("time", Long.valueOf(time).doubleValue());
-        map.put("readCount", Integer.valueOf(this.readCount).doubleValue());
+        map.put("time", time.doubleValue());
+        map.put("readCount", this.readCount.doubleValue());
+        map.put("verticalAccuracy", this.verticalAccuracy);
+        map.put("provider", this.provider);
+        map.put("course", this.course);
+        map.put("courseAccuracy", this.courseAccuracy);
+        map.put("speedAccuracy", this.speedAccuracy);
+        map.put("speed", this.speed);
         return map;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    public double getAccuracy() {
+    public Double getAccuracy() {
         return accuracy;
     }
 
-    public void setAccuracy(double accuracy) {
+    public void setAccuracy(Double accuracy) {
         this.accuracy = accuracy;
     }
 
-    public double getLongitude() {
+    public Double getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
+    public void setLongitude(Double longitude) {
         this.longitude = longitude;
     }
 
-    public double getLatitude() {
+    public Double getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLatitude(Double latitude) {
         this.latitude = latitude;
     }
 
-    public double getAltitude() {
+    public Double getAltitude() {
         return altitude;
     }
 
-    public void setAltitude(double altitude) {
+    public void setAltitude(Double altitude) {
         this.altitude = altitude;
     }
 
-    public long getTime() {
+    public Long getTime() {
         return time;
     }
 
-    public void setTime(long time) {
+    public void setTime(Long time) {
         this.time = time;
     }
 
-    public int getReadCount() {
+    public Integer getReadCount() {
         return readCount;
     }
 
-    public void setReadCount(int readCount) {
+    public void setReadCount(Integer readCount) {
         this.readCount = readCount;
+    }
+
+    public Double getSpeed() {
+        return speed;
+    }
+
+    public void setSpeed(Double speed) {
+        this.speed = speed;
+    }
+
+    public Double getVerticalAccuracy() {
+        return verticalAccuracy;
+    }
+
+    public void setVerticalAccuracy(Double verticalAccuracy) {
+        this.verticalAccuracy = verticalAccuracy;
+    }
+
+    public Double getCourseAccuracy() {
+        return courseAccuracy;
+    }
+
+    public void setCourseAccuracy(Double courseAccuracy) {
+        this.courseAccuracy = courseAccuracy;
+    }
+
+    public Double getSpeedAccuracy() {
+        return speedAccuracy;
+    }
+
+    public void setSpeedAccuracy(Double speedAccuracy) {
+        this.speedAccuracy = speedAccuracy;
+    }
+
+    public String getProvider() {
+        return provider;
+    }
+
+    public void setProvider(String provider) {
+        this.provider = provider;
+    }
+
+    public Double getCourse() {
+        return course;
     }
 }

@@ -1,6 +1,7 @@
 package io.gjg.backgroundlocationupdates.locationstrategies.periodic;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.arch.lifecycle.LiveData;
 import android.content.Context;
@@ -25,6 +26,7 @@ import androidx.work.Worker;
 import io.gjg.backgroundlocationupdates.RequestPermissionsHandler;
 import io.gjg.backgroundlocationupdates.persistence.LocationDatabase;
 import io.gjg.backgroundlocationupdates.persistence.LocationEntity;
+import io.gjg.backgroundlocationupdates.persistence.TraceInserter;
 
 
 public class PeriodicLocationTracker extends Worker {
@@ -69,15 +71,8 @@ public class PeriodicLocationTracker extends Worker {
             if (mLocationDatabase == null) {
                 mLocationDatabase = LocationDatabase.getLocationDatabase(getApplicationContext());
             }
-            Location result = Tasks.await(mClient.getLastLocation());
-            this.mLocationDatabase.locationDao().insertAll(new LocationEntity(
-                    result.getAccuracy(),
-                    result.getLongitude(),
-                    result.getLatitude(),
-                    result.getAltitude(),
-                    Calendar.getInstance().getTimeInMillis(),
-                    0
-            ));
+            @SuppressLint("MissingPermission") Location result = Tasks.await(mClient.getLastLocation());
+            this.mLocationDatabase.locationDao().insertAll(LocationEntity.fromAndroidLocation(result));
             Log.i(TAG, String.format("Location Traces: %d, Unread Location Traces: %d",
                     this.mLocationDatabase.locationDao().countLocationTraces(),
                     this.mLocationDatabase.locationDao().countLocationTracesUnread()));

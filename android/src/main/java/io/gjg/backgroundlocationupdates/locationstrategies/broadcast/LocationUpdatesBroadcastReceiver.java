@@ -1,5 +1,6 @@
 package io.gjg.backgroundlocationupdates.locationstrategies.broadcast;
 
+import android.annotation.SuppressLint;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -12,8 +13,12 @@ import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import io.gjg.backgroundlocationupdates.persistence.LocationDatabase;
 import io.gjg.backgroundlocationupdates.persistence.LocationEntity;
+import io.gjg.backgroundlocationupdates.persistence.TraceInserter;
 
 public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
     private static final String TAG = LocationUpdatesBroadcastReceiver.class.getSimpleName();
@@ -27,6 +32,7 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
         return PendingIntent.getBroadcast(context, 0, intent, PendingIntent.FLAG_UPDATE_CURRENT);
     }
 
+    @SuppressLint("MissingPermission")
     public static void startTrackingBroadcastBased(Context context, int requestInterval) {
         FusedLocationProviderClient client = LocationServices.getFusedLocationProviderClient(context);
         LocationRequest request = new LocationRequest();
@@ -49,19 +55,12 @@ public class LocationUpdatesBroadcastReceiver extends BroadcastReceiver {
             if (ACTION_PROCESS_LOCATION_UPDATE.equals(action)) {
                 LocationResult result = LocationResult.extractResult(intent);
                 if (result != null) {
-                    for (Location location: result.getLocations()) {
-                        Log.d(TAG, String.format("Location: %s", location.toString()));
-                        LocationDatabase.getLocationDatabase(context)
-                                .locationDao()
-                                .insertAll(new LocationEntity(
-                                        location.getAccuracy(),
-                                        location.getLongitude(),
-                                        location.getLatitude(),
-                                        location.getAltitude(),
-                                        location.getTime(),
-                                        0
-                                ));
+                    List<Location> locations = result.getLocations();
+                    LocationEntity[] locationEntities = new LocationEntity[locations.size()];
+                    for (int i = 0; i < locations.size(); i++) {
+                        locationEntities[i] = LocationEntity.fromAndroidLocation(locations.get(i));
                     }
+                    new TraceInserter(context).execute(locationEntities);
                 }
             }
         }

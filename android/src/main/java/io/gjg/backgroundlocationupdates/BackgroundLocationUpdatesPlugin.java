@@ -1,5 +1,6 @@
 package io.gjg.backgroundlocationupdates;
 
+import android.annotation.TargetApi;
 import android.app.Activity;
 import android.arch.lifecycle.Observer;
 import android.content.Context;
@@ -19,11 +20,15 @@ import io.flutter.plugin.common.MethodChannel.Result;
 import io.flutter.plugin.common.PluginRegistry.Registrar;
 import io.gjg.backgroundlocationupdates.locationstrategies.broadcast.LocationUpdatesBroadcastReceiver;
 import io.gjg.backgroundlocationupdates.locationstrategies.periodic.PeriodicLocationTracker;
+import io.gjg.backgroundlocationupdates.persistence.CountRetriever;
 import io.gjg.backgroundlocationupdates.persistence.LocationDatabase;
 import io.gjg.backgroundlocationupdates.persistence.LocationEntity;
+import io.gjg.backgroundlocationupdates.persistence.MarkAsReadTask;
+import io.gjg.backgroundlocationupdates.persistence.TraceRetriever;
 
 /** BackgroundLocationUpdatesPlugin */
 @SuppressWarnings("unchecked")
+@TargetApi(9)
 public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, EventChannel.StreamHandler {
   public static String KEY_PERSISTED_REQUEST_INTERVAL = "io.gjg.backgroundlocationupdates/RequestInterval";
   public static String SHARED_PREFS = "io.gjg.prefs";
@@ -66,13 +71,13 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
     } else if (call.method.equals("trackStop/android-strategy:broadcast")) {
       stopTrackingWithBroadcastStrategy();
     } else if (call.method.equals("getLocationTracesCount")) {
-      getAllLocationTracesCount(result);
+      new CountRetriever(result, mContext).execute(CountRetriever.CountRetrievalMode.RETRIEVE_ALL);
     } else if (call.method.equals("getUnreadLocationTracesCount")) {
-      getUnreadLocationTracesCount(result);
+      new CountRetriever(result, mContext).execute(CountRetriever.CountRetrievalMode.RETRIEVE_UNREAD);
     } else if (call.method.equals("getUnreadLocationTraces")) {
-      getAllUnreadLocationTraces(result);
+      new TraceRetriever(result, mContext).execute(TraceRetriever.TraceRetrievalMode.RETRIEVE_UNREAD);
     } else if (call.method.equals("getLocationTraces")) {
-      getAllLocationTraces(result);
+      new TraceRetriever(result, mContext).execute(TraceRetriever.TraceRetrievalMode.RETRIEVE_ALL);
     } else if (call.method.equals("markAsRead")) {
       markLocationTracesAsRead(call, result);
     } else if (call.method.equals("requestPermission")) {
@@ -157,51 +162,11 @@ public class BackgroundLocationUpdatesPlugin implements MethodCallHandler, Event
   private void markLocationTracesAsRead(MethodCall call, Result result) {
     List<?> arguments = (List<?>) call.arguments;
     List<List<Integer>> locationIds = Utils.chopIntoParts((List<Integer>) arguments.get(0), 900);
-    int affected = 0;
     for (List<Integer> chunk: locationIds) {
-      affected += LocationDatabase.getLocationDatabase(mContext)
-              .locationDao()
-              .markAsRead(chunk);
+        new MarkAsReadTask(mContext).execute(chunk.toArray(new Integer[chunk.size()]));
     }
-    result.success(affected);
+    result.success(0);
   }
-
-  private void getAllLocationTraces(Result result) {
-    List<LocationEntity> locationEntities = LocationDatabase.getLocationDatabase(mContext)
-            .locationDao()
-            .getAll();
-    List<Map<String, Double>> out = new ArrayList<>();
-    for (LocationEntity locationEntity: locationEntities) {
-      out.add(locationEntity.toMap());
-    }
-    result.success(out);
-  }
-
-  private void getAllUnreadLocationTraces(Result result) {
-    List<LocationEntity> locationEntities = LocationDatabase.getLocationDatabase(mContext)
-      .locationDao()
-      .getUnread();
-    List<Map<String, Double>> out = new ArrayList<>();
-    for (LocationEntity locationEntity: locationEntities) {
-      out.add(locationEntity.toMap());
-    }
-    result.success(out);
-  }
-
-  private void getUnreadLocationTracesCount(Result result) {
-    int traces = LocationDatabase.getLocationDatabase(mContext)
-            .locationDao()
-            .countLocationTracesUnread();
-    result.success(traces);
-  }
-
-  private void getAllLocationTracesCount(Result result) {
-    int traces = LocationDatabase.getLocationDatabase(mContext)
-            .locationDao()
-            .countLocationTraces();
-    result.success(traces);
-  }
-
 
   @NonNull
   private Integer extractAndPersistRequestInterval(MethodCall call) {
