@@ -41,12 +41,22 @@ PermissionState toPermissionState(int nativeCode) {
 
 @JsonSerializable()
 class LocationTrace extends Object with _$LocationTraceSerializerMixin {
+  /// The unique, monotonically increasing ID of this Trace.
   int id;
+
   double latitude;
   double longitude;
+
+  /// The Altitude. Only available when the Location Source is GPS.
   double altitude;
+
+  /// How many times this trace has been read from the SQLite Database
   int readCount;
+
+  /// The accuracy radius of this Trace, in meters.
   double accuracy;
+
+  /// The Unix Epoch, in Milliseconds.
   int time;
 
   LocationTrace(
