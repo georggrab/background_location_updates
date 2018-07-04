@@ -1,6 +1,6 @@
 // GENERATED CODE - DO NOT MODIFY BY HAND
 
-part of 'background_location_updates.dart';
+part of 'location_data.dart';
 
 // **************************************************************************
 // JsonSerializableGenerator
