@@ -47,7 +47,7 @@ Add the following to your `pubspec.yml`:
 
 ```yaml
 dependencies:
-  background_location_updates: ^1.0.1
+  background_location_updates: ^1.0.2
 ```
 
 **Warning: The internal SQLite schema changed from 0.3.6 to 1.0.0.** This may be a breaking change.
