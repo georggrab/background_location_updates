@@ -16,17 +16,27 @@
 
 import 'dart:async';
 import 'dart:io' show Platform;
-import 'package:fixnum/fixnum.dart';
 
 import 'package:flutter/services.dart';
-import 'package:flutter/foundation.dart';
 import 'package:json_annotation/json_annotation.dart';
 
 part 'background_location_updates.g.dart';
 
-enum PermissionState { GRANTED, PARTIAL, DENIED }
+/// Represents the PermissionState of Background Location on iOS,
+/// and ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION on Android.
+enum PermissionState { 
+  /// Indicates that the Permission was Granted.
+  GRANTED, 
 
-PermissionState toPermissionState(int nativeCode) {
+  /// Only on iOS: Indicates that the Permission was granted, but only
+  /// while the Application is running, not while in the Background.
+  PARTIAL, 
+
+  /// Indicates that the Permission has been denied.
+  DENIED 
+}
+
+PermissionState _toPermissionState(int nativeCode) {
   switch (nativeCode) {
     case 1:
       return PermissionState.GRANTED;
@@ -108,8 +118,10 @@ class LocationTrace extends Object with _$LocationTraceSerializerMixin {
   /// Where the device is currently heading, measured in degrees from north
   double course;
 
+  /// The Android specific Location Data. `null` if on a iOS Device.
   AndroidSpecificLocationData androidSpecifics;
 
+  /// The iOS specific Location Data. `null` if on an Android Device.
   IOSSpecificLocationData iosSpecifics;
 
   LocationTrace(
@@ -259,9 +271,14 @@ class IOSLocationChangeStrategy extends IOSStrategy {
   }
 }
 
+/**
+ * Retrieve periodic location updates, even when the main App is not running. 
+ * Useful for Navigation Apps to keep a rough idea of where the User is heading, and various other purposes. 
+ * Please don't be evil though, and tell the User exactly how, when and why you wish to retrieve her location. 
+ * Before integrating this Plugin in your app, please read [this](https://www.dataprotection.ie/docs/Guidance-Note-for-Data-Controllers-on-Location-Data/1587.htm).
+ */
 class BackgroundLocationUpdates {
-  static Strategy lastStrategy;
-  static const LOCATION_SINK_SQLITE = 0x001;
+  static Strategy _lastStrategy;
   static const MethodChannel _channel =
       const MethodChannel('plugins.gjg.io/background_location_updates');
 
@@ -271,32 +288,37 @@ class BackgroundLocationUpdates {
   static const EventChannel _permissionStateChangeEvents = const EventChannel(
       'plugins.gjg.io/background_location_updates/permission_state');
 
+  /// Starts the Location Tracking using the specified strategies.
   static Future<void> startTrackingLocation(
       {AndroidStrategy androidStrategy, IOSStrategy iOSStrategy}) async {
     if (Platform.isAndroid) {
-      BackgroundLocationUpdates.lastStrategy = androidStrategy;
+      BackgroundLocationUpdates._lastStrategy = androidStrategy;
       await androidStrategy.invoke(_channel);
     } else if (Platform.isIOS) {
-      BackgroundLocationUpdates.lastStrategy = iOSStrategy;
+      BackgroundLocationUpdates._lastStrategy = iOSStrategy;
       await iOSStrategy.invoke(_channel);
     }
   }
 
+  /// Returns a [Stream] of [bool] indicating whether the Location Tracking is active.
   static Stream<bool> streamLocationActive() {
     return _trackingStateChangeEvents.receiveBroadcastStream().cast<bool>();
   }
 
+  /// Stops the Location Tracking.
   static Future<bool> stopTrackingLocation() async {
-    if (BackgroundLocationUpdates.lastStrategy == null) {
+    if (BackgroundLocationUpdates._lastStrategy == null) {
       await _channel.invokeMethod('revertActiveStrategy', []);
       return true;
     } else {
-      await BackgroundLocationUpdates.lastStrategy.revert(_channel);
+      await BackgroundLocationUpdates._lastStrategy.revert(_channel);
       return true;
     }
   }
 
-  /// Try requesting the permission for tracking the User in the Background Returns a [bool] indicating
+  /// Tries requesting the permission for tracking the User in the Background.
+  /// 
+  ///  Returns a [PermissionState] indicating
   /// if a dialogBox requesting the permission has been shown to the User.
   static Future<PermissionState> requestPermission() async {
     if (await getPermissionState().first == PermissionState.GRANTED) {
@@ -306,14 +328,19 @@ class BackgroundLocationUpdates {
     return getPermissionState().take(2).last;
   }
 
-  /// Get a Stream representing the Permission State of the Background Tracking
+  /// Gets a Stream representing the Permission State of the Background Tracking.
+  /// 
+  /// Returns a [Stream] of [PermissionState]s, indicating Permission State changes as they occur.
   static Stream<PermissionState> getPermissionState() {
     return _permissionStateChangeEvents
         .receiveBroadcastStream()
         .cast<int>()
-        .map(toPermissionState);
+        .map(_toPermissionState);
   }
 
+  /// Gets all Location Traces, regardless if they have been marked as read or not.
+  /// 
+  /// Returns a Future of [List<LocationTrace>]
   static Future<List<LocationTrace>> getLocationTraces() async {
     List<dynamic> traces = await _channel.invokeMethod('getLocationTraces');
     return traces
@@ -323,6 +350,9 @@ class BackgroundLocationUpdates {
         .toList();
   }
 
+  /// Gets only the Location Traces that have not been marked as read previously
+  /// 
+  /// Returns a Future of [List<LocationTrace>]
   static Future<List<LocationTrace>> getUnreadLocationTraces() async {
     List<dynamic> traces =
         await _channel.invokeMethod('getUnreadLocationTraces');
@@ -333,22 +363,42 @@ class BackgroundLocationUpdates {
         .toList();
   }
 
+  /// Gets the internal SQLite Database Path. Can be used in conjunction with other extensions
+  /// such as SQFlite.
+  /// 
+  /// Returns a [Future<String>], denoting the absolute path of the SQLite Database.
   static Future<String> getSqliteDatabasePath() async {
     final String path = await _channel.invokeMethod('getSqliteDatabasePath');
     return path;
   }
 
+  /// Gets the count of Unread Location Traces.
+  /// 
+  /// Returns a [Future<int>].
   static Future<int> getUnreadLocationTracesCount() async {
     final int count =
         await _channel.invokeMethod('getUnreadLocationTracesCount');
     return count;
   }
 
+  /// Gets the count of all Location Traces.
+  /// 
+  /// Returns a [Future<int>].
   static Future<int> getLocationTracesCount() async {
     final int count = await _channel.invokeMethod('getLocationTracesCount');
     return count;
   }
 
+  /// Marks a list of [ids] as read. The [ids] may be retrieved from a List of [LocationTrace]
+  /// like this:
+  /// 
+  /// ```dart
+  /// await BackgroundLocationUpdates.markAsRead(
+  ///     traces.map((trace) => trace.id).asList()
+  /// );
+  /// ```
+  /// 
+  /// Returns a [Future<void>], indicating when the operation is complete.
   static Future<void> markAsRead(List<int> ids) async {
     await _channel.invokeMethod('markAsRead', [ids]);
   }
