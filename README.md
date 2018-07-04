@@ -41,7 +41,7 @@ Before integrating this Plugin in your app, please read [this](https://www.datap
 
 ## Getting Started
 
-### Get the Package
+### Get the Package & Documentation
 
 Add the following to your `pubspec.yml`:
 
@@ -49,6 +49,8 @@ Add the following to your `pubspec.yml`:
 dependencies:
   background_location_updates: ^1.0.2
 ```
+
+Verify the latest verision on [pub](https://pub.dartlang.org/packages/background_location_updates). Consult the Dartdoc of this Plugin [here](https://pub.dartlang.org/documentation/background_location_updates/latest/).
 
 **Warning: The internal SQLite schema changed from 0.3.6 to 1.0.0.** This may be a breaking change.
 
