@@ -11,10 +11,6 @@ import java.util.List;
 import java.util.Map;
 
 public class MarkAsReadTask extends AsyncTask<Integer, Void, Void> {
-    public enum TraceRetrievalMode {
-        RETRIEVE_ALL, RETRIEVE_UNREAD
-    }
-
     private static final String TAG = MarkAsReadTask.class.getSimpleName();
     private WeakReference<Context> mContext;
 

@@ -81,7 +81,7 @@ class BackgroundLocationUpdates {
     List<dynamic> traces = await _channel.invokeMethod('getLocationTraces');
     return traces
         .cast<Map<dynamic, dynamic>>()
-        .map((trace) => trace.cast<String, double>())
+        .map((trace) => trace.cast<String, dynamic>())
         .map(LocationTrace.fromMap)
         .toList();
   }

@@ -47,7 +47,7 @@ Add the following to your `pubspec.yml`:
 
 ```yaml
 dependencies:
-  background_location_updates: ^1.0.2
+  background_location_updates: ^1.0.3
 ```
 
 Verify the latest verision on [pub](https://pub.dartlang.org/packages/background_location_updates). Consult the Dartdoc of this Plugin [here](https://pub.dartlang.org/documentation/background_location_updates/latest/).

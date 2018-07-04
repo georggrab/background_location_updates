@@ -100,35 +100,38 @@ class LocationTrace extends Object with _$LocationTraceSerializerMixin {
       this.accuracy});
 
   static LocationTrace fromMap(Map<String, dynamic> map) {
-    IOSSpecificLocationData iosSpecificLocationData;
-    AndroidSpecificLocationData androidSpecificLocationData;
+    try {
+      IOSSpecificLocationData iosSpecificLocationData;
+      AndroidSpecificLocationData androidSpecificLocationData;
 
-    if (Platform.isAndroid) {
-      androidSpecificLocationData = AndroidSpecificLocationData(
-          courseAccuracy: map["courseAccuracy"] as double,
-          speedAccuracy: map["speedAccuracy"] as double,
-          provider: map["provider"] as String);
-    } else if (Platform.isIOS) {
-      iosSpecificLocationData = IOSSpecificLocationData(logicalFloor: null);
+      if (Platform.isAndroid) {
+        androidSpecificLocationData = AndroidSpecificLocationData(
+            courseAccuracy: map["courseAccuracy"] as double,
+            speedAccuracy: map["speedAccuracy"] as double,
+            provider: map["provider"] as String);
+      } else if (Platform.isIOS) {
+        iosSpecificLocationData = IOSSpecificLocationData(logicalFloor: null);
+      }
+      final trace = LocationTrace(
+        id: map["id"].toInt(),
+        latitude: map["latitude"] as double,
+        longitude: map["longitude"] as double,
+        time: (map["time"] as double).toInt(),
+        speed: (map["speed"] as double),
+        readCount: (map["readCount"] as double).toInt(),
+        accuracy: map["accuracy"] as double,
+        verticalAccuracy: map["verticalAccuracy"] as double,
+        course: map["course"] as double,
+        androidSpecifics: androidSpecificLocationData,
+        iosSpecifics: iosSpecificLocationData,
+      );
+      if (map["altitude"] as double != 0.0) {
+        trace.altitude = map["altitude"] as double;
+      }
+      return trace;
+    } catch (err) {
+      throw err;
     }
-
-    final trace = LocationTrace(
-      id: map["id"].toInt(),
-      latitude: map["latitude"] as double,
-      longitude: map["longitude"] as double,
-      time: (map["time"] as double).toInt(),
-      speed: (map["speed"] as double),
-      readCount: (map["readCount"] as double).toInt(),
-      accuracy: map["accuracy"] as double,
-      verticalAccuracy: map["verticalAccuracy"] as double,
-      course: map["course"] as double,
-      androidSpecifics: androidSpecificLocationData,
-      iosSpecifics: iosSpecificLocationData,
-    );
-    if (map["altitude"] as double != 0.0) {
-      trace.altitude = map["altitude"] as double;
-    }
-    return trace;
   }
 
   @override

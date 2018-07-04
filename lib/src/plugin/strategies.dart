@@ -1,13 +1,23 @@
 import 'dart:async';
 import 'package:flutter/services.dart';
 
+/// Abstract class representing a Strategy to retrieve
+/// the User's location.
 abstract class Strategy {
+  /// Delegate the intent to execute the Strategy to the
+  /// native Platform implementation
   Future<bool> invoke(MethodChannel channel);
+
+  /// Delegate the intent to stop executing the strategy to the
+  /// native Platform implementation
   Future<void> revert(MethodChannel channel);
 }
 
+/// Abstract class representing Android-Compatible Strategies
 abstract class AndroidStrategy extends Strategy {}
 
+/// Android Strategy delegating the intent to retrieve the location
+/// based on a periodic background task to the native implementation.
 class AndroidPeriodicRequestStrategy extends AndroidStrategy {
   Duration requestInterval;
   AndroidPeriodicRequestStrategy({this.requestInterval});
@@ -26,6 +36,8 @@ class AndroidPeriodicRequestStrategy extends AndroidStrategy {
   }
 }
 
+/// Android Strategy delegating the intent to retrieve the location
+/// based on a broadcast receiver to the native implementation
 class AndroidBroadcastBasedRequestStrategy extends AndroidStrategy {
   Duration requestInterval;
   AndroidBroadcastBasedRequestStrategy({this.requestInterval});
@@ -44,6 +56,7 @@ class AndroidBroadcastBasedRequestStrategy extends AndroidStrategy {
   }
 }
 
+/// Abstract class representing iOS-Compatible Strategies
 abstract class IOSStrategy extends Strategy {
   static const int ACCURACY_BEST = 1;
   static const int ACCURACY_KILOMETER = 2;
@@ -52,6 +65,8 @@ abstract class IOSStrategy extends Strategy {
   static const int ACCURACY_NEAREST_TEN_METERS = 5;
 }
 
+/// IOS Strategy delegating the intent to retrieve the location
+/// based on the Significant Location Change API of CLLocationManager
 class IOSSignificantLocationChangeStrategy extends IOSStrategy {
   int desiredAccuracy;
 
@@ -72,6 +87,10 @@ class IOSSignificantLocationChangeStrategy extends IOSStrategy {
   }
 }
 
+/// IOS Strategy delegating the intent to retrieve the location
+/// based on the Location Change API of CLLocationManager. No Background
+/// Updates will be retrieved using this Strategy, but it may be invoked while
+/// the Application is running in order to retrieve a more accurate location reading.
 class IOSLocationChangeStrategy extends IOSStrategy {
   int desiredAccuracy;
 

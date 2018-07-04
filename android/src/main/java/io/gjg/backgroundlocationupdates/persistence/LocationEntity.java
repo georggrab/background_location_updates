@@ -97,13 +97,13 @@ public class LocationEntity {
         map.put("latitude", this.latitude);
         map.put("altitude", this.altitude);
         map.put("time", time.doubleValue());
-        map.put("readCount", this.readCount.doubleValue());
+        map.put("readCount", this.readCount != null? this.readCount.doubleValue(): 0.0);
         map.put("verticalAccuracy", this.verticalAccuracy);
-        map.put("provider", this.provider);
-        map.put("course", this.course);
-        map.put("courseAccuracy", this.courseAccuracy);
-        map.put("speedAccuracy", this.speedAccuracy);
-        map.put("speed", this.speed);
+        map.put("provider", this.provider != null? this.provider : "");
+        map.put("course", this.course != null? this.course: 0.0);
+        map.put("courseAccuracy", this.courseAccuracy != null? this.courseAccuracy: 0.0);
+        map.put("speedAccuracy", this.speedAccuracy != null? this.speedAccuracy: 0.0);
+        map.put("speed", this.speed != null? this.speed: 0.0);
         return map;
     }
 
