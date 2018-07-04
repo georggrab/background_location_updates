@@ -8,7 +8,7 @@ import android.arch.persistence.room.migration.Migration;
 import android.content.Context;
 import android.support.annotation.NonNull;
 
-@Database(entities = {LocationEntity.class}, version = 2, exportSchema = false)
+@Database(entities = {LocationEntity.class}, version = 2)
 public abstract class LocationDatabase extends RoomDatabase {
 
     private static LocationDatabase INSTANCE;
