@@ -1,19 +1,19 @@
 /// Represents the PermissionState of Background Location on iOS,
 /// and ACCESS_COARSE_LOCATION or ACCESS_FINE_LOCATION on Android.
-enum PermissionState { 
+enum PermissionState {
   /// Indicates that the Permission was Granted.
-  GRANTED, 
+  GRANTED,
 
   /// Only on iOS: Indicates that the Permission was granted, but only
   /// while the Application is running, not while in the Background.
-  PARTIAL, 
+  PARTIAL,
 
   /// Indicates that the Permission has been denied.
-  DENIED 
+  DENIED
 }
 
 /// Maps the Native Channel Code to a [PermissionState] enum.
-/// 
+///
 /// Throws if [nativeCode] is a value that is not defined.
 PermissionState toPermissionState(int nativeCode) {
   switch (nativeCode) {

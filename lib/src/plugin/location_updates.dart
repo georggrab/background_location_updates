@@ -53,7 +53,7 @@ class BackgroundLocationUpdates {
   }
 
   /// Tries requesting the permission for tracking the User in the Background.
-  /// 
+  ///
   ///  Returns a [PermissionState] indicating
   /// if a dialogBox requesting the permission has been shown to the User.
   static Future<PermissionState> requestPermission() async {
@@ -65,7 +65,7 @@ class BackgroundLocationUpdates {
   }
 
   /// Gets a Stream representing the Permission State of the Background Tracking.
-  /// 
+  ///
   /// Returns a [Stream] of [PermissionState]s, indicating Permission State changes as they occur.
   static Stream<PermissionState> getPermissionState() {
     return _permissionStateChangeEvents
@@ -75,7 +75,7 @@ class BackgroundLocationUpdates {
   }
 
   /// Gets all Location Traces, regardless if they have been marked as read or not.
-  /// 
+  ///
   /// Returns a Future of [List<LocationTrace>]
   static Future<List<LocationTrace>> getLocationTraces() async {
     List<dynamic> traces = await _channel.invokeMethod('getLocationTraces');
@@ -87,7 +87,7 @@ class BackgroundLocationUpdates {
   }
 
   /// Gets only the Location Traces that have not been marked as read previously
-  /// 
+  ///
   /// Returns a Future of [List<LocationTrace>]
   static Future<List<LocationTrace>> getUnreadLocationTraces() async {
     List<dynamic> traces =
@@ -101,7 +101,7 @@ class BackgroundLocationUpdates {
 
   /// Gets the internal SQLite Database Path. Can be used in conjunction with other extensions
   /// such as SQFlite.
-  /// 
+  ///
   /// Returns a [Future<String>], denoting the absolute path of the SQLite Database.
   static Future<String> getSqliteDatabasePath() async {
     final String path = await _channel.invokeMethod('getSqliteDatabasePath');
@@ -109,7 +109,7 @@ class BackgroundLocationUpdates {
   }
 
   /// Gets the count of Unread Location Traces.
-  /// 
+  ///
   /// Returns a [Future<int>].
   static Future<int> getUnreadLocationTracesCount() async {
     final int count =
@@ -118,7 +118,7 @@ class BackgroundLocationUpdates {
   }
 
   /// Gets the count of all Location Traces.
-  /// 
+  ///
   /// Returns a [Future<int>].
   static Future<int> getLocationTracesCount() async {
     final int count = await _channel.invokeMethod('getLocationTracesCount');
@@ -127,13 +127,13 @@ class BackgroundLocationUpdates {
 
   /// Marks a list of [ids] as read. The [ids] may be retrieved from a List of [LocationTrace]
   /// like this:
-  /// 
+  ///
   /// ```dart
   /// await BackgroundLocationUpdates.markAsRead(
   ///     traces.map((trace) => trace.id).asList()
   /// );
   /// ```
-  /// 
+  ///
   /// Returns a [Future<void>], indicating when the operation is complete.
   static Future<void> markAsRead(List<int> ids) async {
     await _channel.invokeMethod('markAsRead', [ids]);

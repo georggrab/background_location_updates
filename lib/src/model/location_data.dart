@@ -4,9 +4,10 @@ import 'package:json_annotation/json_annotation.dart';
 part 'location_data.g.dart';
 
 @JsonSerializable()
-class AndroidSpecificLocationData extends Object with _$AndroidSpecificLocationDataSerializerMixin {
+class AndroidSpecificLocationData extends Object
+    with _$AndroidSpecificLocationDataSerializerMixin {
   /// The Course Accuracy, measured in degrees
-  /// In the Android Documentation, this is referred to as 
+  /// In the Android Documentation, this is referred to as
   /// bearingAccuracy.
   double courseAccuracy;
 
@@ -16,34 +17,34 @@ class AndroidSpecificLocationData extends Object with _$AndroidSpecificLocationD
   /// The Provider of this Location Trace
   String provider;
 
-  AndroidSpecificLocationData({
-    this.courseAccuracy,
-    this.provider, 
-    this.speedAccuracy
-  });
+  AndroidSpecificLocationData(
+      {this.courseAccuracy, this.provider, this.speedAccuracy});
 
-  @override String toString() {
+  @override
+  String toString() {
     return 'AndroidSpecific(cAcc=$courseAccuracy, provider=$provider, sAcc=$speedAccuracy)';
   }
 
-  factory AndroidSpecificLocationData.fromJson(Map<String, dynamic> json) => _$AndroidSpecificLocationDataFromJson(json);
+  factory AndroidSpecificLocationData.fromJson(Map<String, dynamic> json) =>
+      _$AndroidSpecificLocationDataFromJson(json);
 }
 
 @JsonSerializable()
-class IOSSpecificLocationData extends Object with _$IOSSpecificLocationDataSerializerMixin {
+class IOSSpecificLocationData extends Object
+    with _$IOSSpecificLocationDataSerializerMixin {
   /// The Logical Floor of the User. See iOS Documentation.
   /// May be null.
   int logicalFloor;
 
-  IOSSpecificLocationData({
-    this.logicalFloor
-  });
+  IOSSpecificLocationData({this.logicalFloor});
 
-  @override String toString() {
+  @override
+  String toString() {
     return 'IOSSpecific(floor=$logicalFloor)';
   }
 
-  factory IOSSpecificLocationData.fromJson(Map<String, dynamic> json) => _$IOSSpecificLocationDataFromJson(json);
+  factory IOSSpecificLocationData.fromJson(Map<String, dynamic> json) =>
+      _$IOSSpecificLocationDataFromJson(json);
 }
 
 @JsonSerializable()
@@ -104,28 +105,25 @@ class LocationTrace extends Object with _$LocationTraceSerializerMixin {
 
     if (Platform.isAndroid) {
       androidSpecificLocationData = AndroidSpecificLocationData(
-        courseAccuracy: map["courseAccuracy"] as double,
-        speedAccuracy: map["speedAccuracy"] as double,
-        provider: map["provider"] as String
-      );
+          courseAccuracy: map["courseAccuracy"] as double,
+          speedAccuracy: map["speedAccuracy"] as double,
+          provider: map["provider"] as String);
     } else if (Platform.isIOS) {
-      iosSpecificLocationData = IOSSpecificLocationData(
-        logicalFloor: null
-      );
+      iosSpecificLocationData = IOSSpecificLocationData(logicalFloor: null);
     }
 
     final trace = LocationTrace(
-        id: map["id"].toInt(),
-        latitude: map["latitude"] as double,
-        longitude: map["longitude"] as double,
-        time: (map["time"] as double).toInt(),
-        speed: (map["speed"] as double),
-        readCount:  (map["readCount"] as double).toInt(),
-        accuracy: map["accuracy"] as double,
-        verticalAccuracy: map["verticalAccuracy"] as double,
-        course: map["course"] as double,
-        androidSpecifics: androidSpecificLocationData,
-        iosSpecifics: iosSpecificLocationData,
+      id: map["id"].toInt(),
+      latitude: map["latitude"] as double,
+      longitude: map["longitude"] as double,
+      time: (map["time"] as double).toInt(),
+      speed: (map["speed"] as double),
+      readCount: (map["readCount"] as double).toInt(),
+      accuracy: map["accuracy"] as double,
+      verticalAccuracy: map["verticalAccuracy"] as double,
+      course: map["course"] as double,
+      androidSpecifics: androidSpecificLocationData,
+      iosSpecifics: iosSpecificLocationData,
     );
     if (map["altitude"] as double != 0.0) {
       trace.altitude = map["altitude"] as double;
@@ -138,5 +136,6 @@ class LocationTrace extends Object with _$LocationTraceSerializerMixin {
     return "LocationTrace(id=$id, lat=$latitude, lng=$longitude, acc=$accuracy, vAcc=$verticalAccuracy, speed=$speed, alt=$altitude, readCount=$readCount, time=$time, course=$course, ios=$iosSpecifics, android=$androidSpecifics)";
   }
 
-  factory LocationTrace.fromJson(Map<String, dynamic> json) => _$LocationTraceFromJson(json);
+  factory LocationTrace.fromJson(Map<String, dynamic> json) =>
+      _$LocationTraceFromJson(json);
 }
