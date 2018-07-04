@@ -70,7 +70,7 @@ public class LocationEntity {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             vAcc = (double) location.getVerticalAccuracyMeters();
             cAcc = (double) location.getBearingAccuracyDegrees();
-            speedAcc = (double) location.getSpeed();
+            speedAcc = (double) location.getSpeedAccuracyMetersPerSecond();
         }
 
         return new LocationEntity(
