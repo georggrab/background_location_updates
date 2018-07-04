@@ -50,7 +50,7 @@ dependencies:
   background_location_updates: ^1.0.1
 ```
 
-**Warning: The internal SQLite schema changed from 0.3.6 to 1.0.0. This is a breaking change. Users will have to reinstall your App prior to upgrading.**
+**Warning: The internal SQLite schema changed from 0.3.6 to 1.0.0.** This may be a breaking change.
 
 ### Android Permissions
 

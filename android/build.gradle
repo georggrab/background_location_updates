@@ -44,7 +44,7 @@ dependencies {
     implementation "com.google.android.gms:play-services-location:15.0.1"
     def work_version = "1.0.0-alpha02"
 
-    def room_version = "1.1.0" // or, for latest rc, use "1.1.1-rc1"
+    def room_version = "1.1.1-rc1" // or, for latest rc, use "1.1.1-rc1"
 
     implementation "android.arch.persistence.room:runtime:$room_version"
     annotationProcessor "android.arch.persistence.room:compiler:$room_version"
