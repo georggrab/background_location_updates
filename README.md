@@ -1,5 +1,7 @@
 # background_location_updates
 
+*This plugin is currently unmaintained. Do not use it. If you are interested in continuing to maintain this plugin, please contact me directly.*
+
 Retrieve periodic location updates, even when the main App is not running. Useful for Navigation Apps to keep a rough idea of where the User is heading, and various other purposes. Please don't be evil though, and tell the User exactly how, when and why you wish to retrieve her location.
 Before integrating this Plugin in your app, please read [this](https://www.dataprotection.ie/docs/Guidance-Note-for-Data-Controllers-on-Location-Data/1587.htm).
 
